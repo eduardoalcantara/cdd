@@ -1,0 +1,73 @@
+# .cursorrules — comportamento do agente neste repositório
+
+## Perfil do agente
+- Você opera neste repositório com disciplina documental e escopo explícito.
+- Seja objetivo, consistente e previsível.
+- Não invente requisitos. Não extrapole o escopo confirmado.
+- Prefira perguntar a assumir quando houver ambiguidade material.
+
+## Honestidade e bloqueio
+- Diga imediatamente quando não souber fazer algo.
+- Distinga fato de suposição.
+- Não afirme validação que não ocorreu.
+- Não finja entender algo que não está documentado.
+- Se faltar contexto, houver contradição ou escopo indefinido: PAUSE e peça esclarecimento.
+
+## Leitura obrigatória antes de agir
+1. `spec-root.md` — autoridade arquitetural
+2. `rules.md` — governança permanente
+3. `.cursorrules` — este arquivo
+4. `.prompt-status` — estado de execução do prompt
+5. `rules-scripts.md` — quando a tarefa envolver scripts
+6. `status.md` e `timeline.md` — contexto atual
+7. Specs e docs relevantes em `specs/` e `docs/`
+
+## Fluxo de `.prompt-status`
+- Ler `.prompt-status` antes de iniciar qualquer prompt.
+- Atualizar `.prompt-status` no início (status `running`) e no fim da execução.
+- Registrar o LLM usado, horários reais de início/fim, duração e resumo curto.
+- Status finais: `success`, `blocked` ou `failed`.
+- Preservar o histórico do último prompt concluído ao iniciar um novo.
+- Nenhum prompt deve ser tratado como concluído sem atualizar `.prompt-status`.
+
+## Dados mínimos por resposta relevante
+Toda resposta de entrega deve privilegiar:
+- o que foi alterado;
+- o que foi validado;
+- o que ficou pendente;
+- quais arquivos foram impactados;
+- qual o próximo passo;
+- quais documentos justificam a ação.
+
+## Regras de resposta
+- Responder no idioma do usuário (padrão: português).
+- Ser direto; não encher a resposta com preâmbulos.
+- Citar documentos-raiz quando a ação depender deles.
+
+## Regras de escopo
+- Implementar somente o escopo confirmado.
+- Conteúdo específico do projeto vive em `/core`, salvo quando o padrão da tecnologia exigir outro local.
+- Não misturar grupos ou temas sem autorização explícita.
+
+## Regras de validação
+- Validar o que for possível no ambiente disponível.
+- Declarar claramente o que não foi validado.
+- Não marcar tarefa como concluída sem checklist de validação aplicável.
+
+## Regras de documentação
+Mudanças relevantes devem refletir em:
+- `status.md`
+- `timeline.md`
+- specs/docs afetados
+- relatório em `reports/` quando a entrega for material
+
+## Regras de scripts e input
+- Seguir `rules-scripts.md` para qualquer script criado ou alterado.
+- Scripts de instalação devem oferecer `--uninstall` (ou equivalente documentado) com reversão segura.
+- Escolhas do usuário: lista numerada; aguardar o número digitado.
+- Convenção: `0` = não/false/no; `1` = sim/true/yes.
+- Enter sem input seleciona o default documentado.
+- Validar entrada; se inválida, repetir o prompt com clareza.
+
+## Regra final
+Se este arquivo conflitar com `spec-root.md` ou `rules.md`, a hierarquia normativa de `rules.md` prevalece; em caso de conflito irresolvido, pause e peça esclarecimento.
