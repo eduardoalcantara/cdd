@@ -43,6 +43,13 @@ Toda resposta de entrega deve privilegiar:
 - Responder no idioma do usuário (padrão: português).
 - Ser direto; não encher a resposta com preâmbulos.
 - Citar documentos-raiz quando a ação depender deles.
+- **OBRIGATÓRIO**: A última linha da sua resposta no chat DEVE conter o bloco de resumo extraído do `.prompt-status`, neste formato:
+  `[Prompt #X | LLM: <Nome> | Tempo: <Tempo>]` (onde Tempo exibe em segundos, ou minutos e segundos se durar > 60s, ex: `1m 15s`)
+
+## CCIA: Continuidade de Contexto para IA
+- Para evitar perda de contexto entre instâncias remotas/locais (ex: Cloud Agents, PCs diferentes), grave TODO PROMPT recebido e UM RESUMO DA RESPOSTA num log contínuo.
+- Adicione/anexe ao arquivo `prompts/chat-YYYY-MM-DD-<hostname>.md` (ex: `chat-2026-08-26-eduardo-pc.md`).
+- Faça isso em todas as interações. Assim que terminar a tarefa, documente a conversa lá.
 
 ## Regras de escopo
 - Implementar somente o escopo confirmado.

@@ -113,7 +113,7 @@ Rastreia o prompt em andamento, o último prompt concluído, o LLM utilizado, a 
 Fornece o molde para novas specs do projeto.
 
 ### 3.14 `rules-scripts.md`
-Define a governança de criação e execução de scripts, incluindo organização, input, cabeçalho, autodetecção da raiz, UX operacional e desinstalação reversa.
+Define a governança de criação e execução de scripts, incluindo organização, input, cabeçalho padronizado e colorido, autodetecção da raiz, UX operacional (inclusive modos de automação) e desinstalação reversa.
 
 ### 3.15 `docs/`
 Armazena documentação técnica, operacional, normativa e de produto.
@@ -192,6 +192,7 @@ Armazena o conteúdo específico do projeto, incluindo pastas de domínio, arqui
 - Regras de validação.
 - Regras de bloqueio.
 - Regras de atualização.
+- **CCIA**: Continuidade de Contexto para IA (Logs diários do chat na pasta `prompts/`).
 
 ### 4.6 `status.md`
 - Data da última atualização.
@@ -237,9 +238,10 @@ Armazena o conteúdo específico do projeto, incluindo pastas de domínio, arqui
 - Perfil do agente.
 - Comportamento esperado.
 - Honestidade e bloqueio.
-- Regras de resposta.
+- Regras de resposta (incluindo rodapé obrigatório com metadados do `.prompt-status`).
 - Regras de validação.
 - Regras de escopo.
+- CCIA: Continuidade de Contexto para IA (obrigação de registrar chat em `prompts/chat-YYYY-MM-DD-<hostname>.md`).
 - Regras de atualização documental.
 - Regras de dados mínimos por resposta.
 - Regras de scripts e input.
@@ -272,19 +274,18 @@ Armazena o conteúdo específico do projeto, incluindo pastas de domínio, arqui
 - Se aplicável, impacto sobre `.prompt-status` e sobre os fluxos de rastreio do Cursor AI.
 
 ### 4.14 `rules-scripts.md`
-- Propósito.
-- Escopo.
+- Propósito e escopo.
 - Limpeza inicial da tela.
-- Cabeçalho operacional.
+- Cabeçalho operacional tabelado, obrigatoriamente renderizado em ciano usando caracteres ASCII/OEM 437.
 - Organização por categoria macro.
 - Descoberta da raiz do repositório.
-- Parâmetros mínimos e input interativo.
+- Parâmetros mínimos, input interativo numerado (`0`/`1`).
+- Modos não-interativo e remoto (`--quiet`, `--force`, `--ssh`, `--log`).
 - Uso de caminhos internos.
 - Mensagens e UX operacional.
 - Equivalência comportamental entre Linux e Windows.
 - Scripts de instalação e desinstalação.
-- Atualização documental.
-- Regra final.
+- Atualização documental e Regra final.
 
 ### 4.15 `docs/`
 - Documentação técnica.
@@ -372,6 +373,7 @@ Toda resposta relevante deve privilegiar:
 - quais arquivos foram impactados;
 - qual o próximo passo;
 - quais documentos justificam a ação.
+- OBRIGATÓRIO: Terminar a resposta com o resumo do `.prompt-status` na última linha: `[Prompt #X | LLM: <Nome> | Tempo: <Tempo>]` (se durar > 60s, exiba em minutos e segundos, ex: `1m 30s`)
 
 ### 5.4 Leitura obrigatória
 Antes de agir, o agente deve ler os documentos-raiz relevantes.
@@ -402,6 +404,12 @@ Sempre que o usuário precisar tomar uma escolha, o script deve exibir uma lista
 - Registrar o tempo de início, fim e duração.
 - Registrar o status final e um resumo curto da tarefa.
 - Preservar o histórico recente sem sobrescrever o que já foi concluído.
+
+### 5.11 CCIA: Continuidade de Contexto para IA
+Para lidar com o problema de fragmentação de histórico (diferentes instâncias do Cursor nas máquinas ou Cloud Agents), o agente deve SEMPRE:
+- Salvar a pergunta do usuário e um resumo executivo da sua resposta (decisões, códigos modificados, bugs arrumados).
+- Utilizar o arquivo correspondente ao dia e máquina: `prompts/chat-YYYY-MM-DD-<hostname>.md` (anexando ao final do arquivo).
+- Assim, outra instância da IA poderá ser instruída a ler estes arquivos para recuperar todo o histórico de decisões e pensamentos, superando a barreira de contexto local de cada IDE.
 
 ---
 
@@ -440,22 +448,28 @@ O `flow.md` deve orientar a sequência de trabalho no repositório.
 
 Todo script de instalação deve oferecer um modo de desinstalação reversa, preferencialmente por `--uninstall` ou equivalente documentado.
 
-### Regras
+### Regras de Reversão
 - O modo de desinstalação deve desfazer exclusivamente as alterações realizadas pelo script.
 - O modo de desinstalação deve preservar conteúdo que não foi criado por ele.
 - O modo de desinstalação deve falhar de forma segura se não puder reverter algo integralmente.
 - Se o script instalar, configurar, registrar ou copiar algo, precisa existir caminho documentado para desfazer isso.
 - A reversão deve ser previsível, explícita e segura.
 
+### Visualização
+Todo script interativo deve iniciar limpando a tela (`clear`) e renderizando um cabeçalho de tabela estruturada em caracteres ASCII/OEM (code page 437) colorida em Ciano, exibindo metadados operacionais fixos separados por linha horizontal de informações em tempo de execução.
+
 ### Regra de input do usuário
-Sempre que o usuário precisar tomar uma escolha, o script deve exibir uma lista numerada de opções e aguardar que ele digite o número correspondente.
+Sempre que o usuário precisar tomar uma escolha, o script deve exibir uma lista numerada de opções e aguardar que ele digite o número correspondente. (NUNCA solicite `s/n` ou texto aberto sem necessidade explícita).
 
 ### Convenção obrigatória de seleção
-- `0` significa sempre `não`, `false` ou `no`.
-- `1` significa sempre `sim`, `true` ou `yes`.
+- `0` significa sempre `não`, `false`, `no` ou `abortar`.
+- `1` significa sempre `sim`, `true`, `yes` ou `continuar`.
 - Pressionar `Enter` sem digitar nada deve selecionar a opção default documentada.
 - O script deve validar a opção escolhida antes de seguir.
 - Se a entrada for inválida, o script deve repetir a solicitação de forma clara.
+
+### Suporte a automação
+- Todo script interativo de alteração sistêmica DEVE permitir o modo automático via opções padrão de linha de comando: `--quiet` (suprime input), `--force` (autoriza ações destrutivas quando silencioso) e `--ssh` + `--log` (execução segura por agentes e sem TTY, espelhando a saída da tela num arquivo).
 
 ---
 

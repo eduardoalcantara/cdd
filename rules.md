@@ -61,11 +61,17 @@ Pause e peça esclarecimento quando:
 - Ao mudar regras permanentes, atualizar este arquivo e refletir em `.cursorrules` / `flow.md` se necessário.
 - Ao concluir prompts, atualizar `.prompt-status` sem perder o histórico recente.
 
+## CCIA: Continuidade de Contexto para IA
+
+- Para manter contexto sincronizado via git entre múltiplas máquinas (local, trabalho, cloud agents), **todo prompt do usuário e a resposta consolidada da IA DEVEM ser anexados a um log em Markdown**.
+- O log deve ser salvo em `prompts/chat-YYYY-MM-DD-<hostname>.md` (ex.: `chat-2026-08-26-eduardo-pc.md`).
+- A IA deve sempre anexar a requisição e a resposta ao final desse arquivo, garantindo que outras IAs possam ler a história completa das decisões.
+
 ## Regras de scripts (resumo)
 
 Detalhes em `rules-scripts.md`:
 
 - instalação com `--uninstall` reversível;
-- input numerado;
-- `0` = não, `1` = sim;
-- Enter = default documentado.
+- cabeçalho operacional tabelado, visualmente destacado em cor Ciano;
+- menus sempre através de lista numerada: `0` = não, `1` = sim, Enter = default;
+- obrigatoriedade de suportar execução não interativa e remota (`--quiet`, `--ssh`, `--force`, `--log`).

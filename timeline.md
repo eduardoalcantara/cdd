@@ -1,5 +1,12 @@
 # timeline.md — histórico evolutivo (cronológico reverso)
 
+## 2026-08-26 — Atualização de Governança de Scripts
+
+- **Evento:** Importação das regras de automação (`--ssh`, `--quiet`) e cabeçalhos visuais CLI (tabelas Ciano/ASCII OEM 437) para o modelo base.
+- **Impacto:** Novos projetos criados a partir deste padrão (incluindo o `cdd`) já nascem com a governança correta para scripts robustos interativos e autônomos. A especificação original foi movida para concluída.
+- **Arquivos afetados:** `rules-scripts.md`, `rules.md`, `spec-project-bootstrap.md`, `status.md`, `specs/done/SPEC-cabecalhos-cli.md`.
+- **Observações:** Repositório começa sua transição oficial para se tornar o utilitário de console Linux `cdd`.
+
 ## 2026-07-26 — Padronização de nomes com hífen
 
 - **Evento:** renomeação de `spec_root.md`, `spec_template.md` e `rules_scripts.md` para hífen.
