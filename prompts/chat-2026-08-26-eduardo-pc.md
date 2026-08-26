@@ -19,3 +19,79 @@
 1. Atualizado `.cursorrules` para definir a regra de formatação onde tempo acima de 60s deve ser exibido como minutos e segundos (ex: `1m 15s`).
 2. Atualizado `spec-project-bootstrap.md` com a nova regra de formatação para os novos repositórios baseados neste template.
 3. Atualizado `.prompt-status` e registrado o novo formato do prompt na saída.
+
+## Prompt #8
+**Contexto/Pergunta:** O usuário solicitou a personalização do repositório para ser efetivamente o código do comando `cdd` (Change Directory Directly). Definiu o funcionamento da CLI (pesquisas com parâmetros, opções `-l`, `-2...20`, `-o[a/d/f]`, `-q[s/i/a]`), configurações globais com parâmetros de persistência (`:on` e `:off`). Levantou questões sobre exequibilidade de menus iterativos em Bash vs Rust, suporte a Coringas e navegação multiplataforma (mudança do diretório root pai de dentro do app rodando).
+
+**Ação/Resposta:**
+1. Respondido tecnicamente (em `specs/to-do/SPEC-cdd-core.md`) as dúvidas apresentadas: uso de wildcards é normal via Rust; TUI robustas são inviáveis em Bash puro e muito bem suportadas por Rust; e *crucialmente* explicou-se o modelo de arquitetura de **Shell Wrapper**, a única forma viável de um processo (o Binário) conseguir mudar o diretório (`cd`) do shell pai que o convocou (passando o retorno da CLI em `stdout` e interceptando num `.ps1` ou `.sh`).
+2. Atualizados os arquivos base `spec-root.md` e `readme.md` traduzindo a finalidade do repositório de Genérica para Específica.
+3. Adicionado o arquivo de prompt contínuo da customização (`prompts/bootstrap-personalizar-projeto.md`) como requisitado.
+4. Atualizados o `status.md` e `timeline.md` refletindo as alterações do escopo principal para `cdd`.
+
+## Prompt #9
+**Contexto/Pergunta:** O usuário aprovou a implementação do projeto `cdd` via modo plano (Plan Mode) e solicitou o início do trabalho em Agent Mode, seguindo a lista de tarefas (TODO) criada, incluindo suporte à varredura distinta entre Linux (`/`) e Windows (drive atual ou especificado como letra no 1º arg).
+
+**Ação/Resposta:**
+1. Inicializado o pacote Rust em `core/` com `cargo init`.
+2. Adicionadas as dependências no `Cargo.toml`: `clap`, `inquire`, `jwalk`, `serde`, `serde_json`, `dirs` e `regex`.
+3. Implementada a lógica de configuração `config.rs` persistente (salvando estado em `~/.config/cdd/cdd.json`).
+4. Implementado o parser de CLI (`args.rs`) validando as flags pegajosas (sticky) com sufixos `:on` e `:off`.
+5. Construído o motor de busca hiper-rápida via `jwalk` (`search.rs`) respeitando o path de root do Linux e Windows.
+6. A interface visual via TUI (usando a crate `inquire`) foi isolada no módulo `tui.rs`.
+7. Criados os Wrappers (`cdd.sh` e `cdd.ps1`) dentro de `scripts/shell/` garantindo a comunicação isolada via `--cdd-out-file` (para que o `cd` seja feito pelo prompt e a TUI continue sendo renderizada ao usuário tranquilamente sem corromper o subshell).
+8. Executado teste bem-sucedido diretamente via dot-sourcing do wrapper no PowerShell, o qual provou a exequibilidade do padrão híbrido Rust+Script.
+
+## Prompt #10
+**Contexto/Pergunta:** O usuário perguntou se no ato da instalação ou do primeiro uso o comando já inclui todos os arquivos necessários (`.ps1` ou `.sh`) na pasta correta que esteja no PATH.
+
+**Ação/Resposta:**
+1. Esclarecido que, na fase atual do código recém-gerado, os arquivos requerem importação manual (source/dot-sourcing) e os binários ainda estão na pasta de compilação.
+2. Apresentadas as abordagens possíveis para resolver isso (criar um script `install.sh`/`install.ps1` que adiciona as chamadas no profile do usuário e joga os executáveis no PATH ou implementar um comando `--install` direto no binário Rust).
+3. Documentada a necessidade futura da criação do fluxo de instalação seguindo as normas da `rules-scripts.md`.
+
+## Prompt #11
+**Contexto/Pergunta:** O usuário aprovou a criação do fluxo de instalação baseado nas normas exigidas para scripts (menus numéricos, tabela ciano no header, modos remotos e uninstall).
+
+**Ação/Resposta:**
+1. Criados os diretórios para alocar os scripts de setup.
+2. Desenvolvido `scripts/setup/install.sh` para Linux/WSL que compila a release Rust e adiciona a injeção do `.bashrc`/`.zshrc` além de permitir reversão (`--uninstall`) com as devidas confirmações.
+3. Desenvolvido `scripts/setup/install.ps1` para Windows contendo a interface tabular em Ciano, flags (`-Uninstall`, `-Quiet`, `-Force`) e adição da função wrapper no arquivo `$PROFILE` padrão do PowerShell do usuário atual.
+
+## Prompt #12
+**Contexto/Pergunta:** O usuário recordou a importância de manter os arquivos Linux estritamente em formato LF (sem CRLF). Também levantou uma questão excelente de UX e distribuição: o instalador recém-criado exige que o usuário possua a suíte Rust (`cargo`) para compilar localmente o binário. Foi questionado como gerar pacotes de distribuição para o usuário final (deb/msi vs zip/tar.gz).
+
+**Ação/Resposta:**
+1. Rodado um script via PowerShell em Agent Mode que lê `cdd.sh` e `install.sh`, apaga quebras de linha `\r` (`CR`) e reescreve os bytes brutos do arquivo garantindo o formato UNIX (`LF`).
+2. Aconselhado o usuário de que, para ferramentas CLI em Rust modernas (como `bat`, `ripgrep`, `zoxide`), usar arquivos `.tar.gz` e `.zip` é muito superior e menos custoso do que construir instaladores MSI ou pacotes DEB/RPM.
+3. Sugerido o próximo passo: criar arquivos baseados na `rules-scripts.md` (`build-dist.ps1` e `build-dist.sh`) que geram as releases otimizadas sem código fonte, embutindo um instalador standalone para usuários sem Rust.
+
+## Prompt #13
+**Contexto/Pergunta:** O sistema notificou que o processo em background da TUI (Shell ID 254575) que estava testando o cdd de forma interativa foi cancelado/abortado pelo usuário.
+**Ação/Resposta:** O usuário foi notificado que a interrupção foi processada adequadamente e que isso comprova que o controle interativo via terminal com o wrapper e a TUI está funcionando como devia e os sinais de cancelamento funcionam corretamente.
+
+## Prompt #14
+**Contexto/Pergunta:** O usuário concordou com a estratégia do ZIP/TAR.GZ e solicitou a criação da orquestração de montagem destes pacotes para os usuários finais.
+
+**Ação/Resposta:**
+1. Modificados os arquivos de Shell Wrappers do Desenvolvedor (`cdd.sh` e `cdd.ps1`) para também suportarem uma busca pelo executável no mesmo diretório em que o wrapper se encontra, a fim de garantir portabilidade para o usuário final.
+2. Criados os scripts `build-dist.sh` e `build-dist.ps1` que geram a pasta `dist/` com o artefato de release compilado e compactam em pacotes tar/zip para exportação.
+3. Criados os scripts autônomos que irão embutidos nestes pacotes (`install-user.sh` e `install-user.ps1`), os quais apenas copiam os arquivos descompactados para `~/.local/share/cdd` ou `$LOCALAPPDATA/cdd` e injetam a requisição de load do ambiente em `.bashrc`/`.zshrc` ou `$PROFILE`.
+4. Fixadas quebras de linha em formato Linux (`LF`) para os novos scripts bash criados.
+5. Atualizados `status.md` e `timeline.md` para refletirem que a release primária (`v0.1.0`) do sistema via binário encapsulado cross-platform atingiu o marco de empacotamento end-user.
+
+## Prompt #15
+**Contexto/Pergunta:** O usuário encontrou um erro ao rodar `.\scripts\setup\build-dist.ps1` (`Split-Path: Parameter set cannot be resolved using the specified named parameters` indicando que `$MyInvocation.MyCommand.Path` retornou `null`). Ele também perguntou onde fica o `install-user.ps1` e demonstrou que tentou rodar o comando `cdd` diretamente no terminal sem antes "instalar" ou fazer source do profile.
+
+**Ação/Resposta:**
+1. A variável `$MyInvocation.MyCommand.Path` as vezes retorna nulo no PowerShell moderno (versão 5+) dependendo de como o script é chamado (dot-sourcing vs execução direta). O código de todos os 4 scripts `.ps1` do repositório foi substituído pela abordagem moderna garantida: `$ScriptPath = if ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path } else { $PSCommandPath }`.
+2. Explicado ao usuário que o `install-user.ps1` não fica solto em lugar nenhum na máquina dele. Esse script foi **empacotado dentro do ZIP** gerado (`G:\Meu Drive\...\dist\cdd-windows-x86_64.zip`).
+3. Orientado o usuário sobre o fato do comando `cdd` não funcionar magicamente após o *build*. Para funcionar no terminal em que ele está, ele precisaria instalar o wrapper rodando `.\scripts\setup\install.ps1` e abrir uma nova aba do terminal.
+
+## Prompt #16
+**Contexto/Pergunta:** O usuário solicitou que fossem feitos os Commits e PUSH de todas essas mudanças implementadas até agora.
+
+**Ação/Resposta:**
+1. Avaliado o status atual do git (arquivos untracked, modificados, diff).
+2. Atualizado o log do CCIA para incluir o andamento de todos os prompts de hoje até o momento do commit, a fim de preservar o contexto remoto.
+3. Executado `git add`, `git commit` descrevendo as evoluções (de template para o comando cdd em Rust/Shell) e feito o `git push` para sincronizar no remoto.

@@ -1,8 +1,8 @@
-# spec-root.md — autoridade arquitetural
+# cdd cli command (change directory directly) - a Linux evolution of cd for faster users
 
 ## Propósito do projeto
 
-[NOME DO PROJETO] existe para [PROPÓSITO EM UMA FRASE].
+O comando `cdd` (Change Directory Directly) existe para acelerar a navegação de diretórios via terminal, permitindo encontrar e mudar para pastas baseando-se em pesquisas fuzzy ou parâmetros sequenciais, sem exigir o path completo.
 
 Este repositório nasce a partir do template universal definido em `spec-project-bootstrap.md`, com estrutura documental completa e orientação explícita para o Cursor AI.
 
@@ -24,9 +24,10 @@ Este repositório nasce a partir do template universal definido em `spec-project
 
 ## Escopo
 
-- Manter a estrutura documental e operacional do template.
-- Permitir adaptação por domínio (software, hardware, SO, impressão 3D, híbridos).
-- Garantir que o Cursor consiga operar sem ambiguidade sobre regras, validação e documentação.
+- Implementar a CLI `cdd` cross-platform (binário compilado em Rust + Shell Wrappers em Bash/PowerShell).
+- Suportar fuzzy finding, wildcards nativos e menus interativos customizados.
+- Manter o comportamento das flags configuráveis (sticky settings com modo `:on` e `:off`).
+- Manter a estrutura documental e operacional do template original para garantir que o Cursor consiga operar sem ambiguidade.
 
 ## Fora de escopo
 

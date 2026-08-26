@@ -1,17 +1,17 @@
-# [NOME DO PROJETO]
+# cdd (Change Directory Directly)
 
-> Template universal de repositório para projetos implementados com Cursor IDE.
+> Evolução do comando `cd` do Linux projetada para usuários velozes de linha de comando.
 
 ## Resumo
 
-Este repositório é a fundação documental e operacional para novos projetos. Ele padroniza estrutura, governança, fluxo do agente, rastreamento de prompts e o núcleo específico do projeto em `/core`.
+O `cdd` é um utilitário CLI que revoluciona a forma de navegar em diretórios no terminal. Diferente do comando `cd` padrão que demanda o caminho exato (`cd /var/www/applications/app1`), o `cdd` aceita parâmetros de pesquisa nebulosos (fuzzy/parciais). 
 
-Substitua os placeholders `[NOME DO PROJETO]`, `[RESUMO]`, `[PÚBLICO]` e demais marcações ao iniciar um projeto real a partir deste template.
+Basta digitar `cdd www app1` e, se esse for o único resultado plausível no sistema, ele te leva para lá instantaneamente. Se houver múltiplos diretórios correspondentes, uma lista interativa minimalista será exibida para você navegar (usando setas) e selecionar com ENTER o destino.
 
 ## Público e objetivo
 
-- **Público:** pessoas e agentes que criam e mantêm projetos no Cursor.
-- **Objetivo:** nascer com contexto suficiente para o Cursor trabalhar com consistência desde o primeiro prompt.
+- **Público:** Desenvolvedores, sysadmins e power users que trabalham extensivamente em terminais no Linux (Bash/Zsh) ou Windows (PowerShell).
+- **Objetivo:** Fornecer navegação super rápida através de buscas indexadas de glob patterns, suportando flags flexíveis que podem ser persistidas no perfil do usuário.
 
 ## Estrutura de alto nível
 
@@ -30,12 +30,11 @@ Substitua os placeholders `[NOME DO PROJETO]`, `[RESUMO]`, `[PÚBLICO]` e demais
 
 ## Como iniciar
 
-1. Crie um repositório novo a partir deste template no GitHub (**Use this template**).
-2. Clone o repositório e abra no Cursor.
-3. Leia, nesta ordem: `spec-root.md` → `rules.md` → `flow.md` → `setup.md`.
-4. Preencha os placeholders do domínio do projeto.
-5. Coloque o conteúdo específico em `/core`.
-6. Atualize `status.md` e `timeline.md` a cada entrega relevante.
+1. Clone o repositório.
+2. Certifique-se de possuir o toolchain do **Rust** instalado (`cargo`).
+3. O código fonte está contido em `/core`. Para desenvolver as implementações da TUI e do sistema de busca, navegue até esta pasta.
+4. Para as documentações e diretrizes de contribuição, leia nesta ordem: `spec-root.md` → `rules.md` → `flow.md`.
+5. Detalhes de arquitetura de software estão em `specs/`.
 
 Detalhes de ambiente: ver `setup.md`, `tools-linux.md` e `tools-windows.md`.
 

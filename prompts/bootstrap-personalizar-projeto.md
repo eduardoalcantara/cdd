@@ -1,18 +1,23 @@
-# Cola de bootstrap — personalizar projeto a partir do template
+# Prompt Base: Bootstrap de Personalização de Projeto
 
-Use este prompt no Cursor após criar um repositório a partir do template.
+Ao usar o template de fundação em um novo repositório derivado de `spec-project-bootstrap.md`, utilize este prompt (ou peça ao Cursor para rodá-lo) a fim de substituir os placeholders genéricos para a essência real do seu projeto.
 
----
+## Ação Solicitada à IA
 
-Leia, nesta ordem: `spec-root.md`, `rules.md`, `.cursorrules`, `.prompt-status`, `flow.md`, `status.md` e `setup.md`.
+```markdown
+Por favor, personalize a fundação documental deste projeto derivado do meu template.
+Estamos criando um novo sistema/comando com as seguintes características:
 
-Objetivo: personalizar este repositório para o projeto **[NOME DO PROJETO]**.
+1. **Nome do Projeto**: [INSERIR NOME]
+2. **Propósito (Uma frase)**: [INSERIR PROPÓSITO]
+3. **Público e Objetivo**: [INSERIR PÚBLICO E OBJETIVO PRINCIPAL]
+4. **Escopo Principal**: [O QUE ESTÁ DENTRO DO ESCOPO]
 
-Faça somente o seguinte:
-1. Substituir placeholders óbvios (`[NOME DO PROJETO]`, propósito, público) em `readme.md` e `spec-root.md`.
-2. Atualizar `status.md` com o estado inicial do projeto real.
-3. Adicionar uma entrada em `timeline.md` registrando a criação do projeto a partir do template.
-4. Criar a primeira spec em `specs/to-do/` usando `spec-template.md`, com escopo **[DESCREVER]**.
-5. Atualizar `.prompt-status` no início e no fim conforme `flow.md`.
-
-Não implemente o domínio ainda. Não altere a estrutura de pastas sem necessidade. Coloque conteúdo específico futuro em `/core`.
+Execute as seguintes ações:
+1. Altere todos os cabeçalhos e placeholders `[NOME DO PROJETO]`, `[RESUMO]` etc., em `readme.md` e `spec-root.md`.
+2. Inclua o escopo inicial em `spec-root.md`.
+3. Escreva a primeira documentação de especificações sobre os detalhes técnicos discutidos acima em `specs/to-do/SPEC-core.md`.
+4. Atualize o `status.md` (removendo as tarefas sobre a criação do template genérico e começando as do novo projeto).
+5. Faça um lançamento de marco cronológico no `timeline.md`.
+6. Após as alterações, leia o arquivo e crie o sumário executivo em `.prompt-status` e siga os procedimentos CCIA anexando as respostas aos logs `prompts/chat...` da sessão de hoje.
+```
