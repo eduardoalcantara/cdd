@@ -57,3 +57,9 @@
 1. **Diagnóstico:** Constatado que arquivos no Google Drive (G:) frequentemente recebem um *Alternate Data Stream* (`Zone.Identifier` / Mark of the Web) que faz com que o Windows (e PowerShell) tratem o arquivo como originário da internet, bloqueando a execução por ser `RemoteSigned` ou exigindo confirmação de assinatura.
 2. **Correção Automática:** Adicionado o comando `Unblock-File -Path $CddScriptPath -ErrorAction SilentlyContinue` dentro dos scripts de instalação (`install.ps1` e `install-user.ps1`) para que o bloqueio seja removido no momento da instalação.
 3. **Desbloqueio Imediato:** Executado o `Unblock-File` remotamente no arquivo `cdd.ps1` da máquina do usuário para corrigir o problema atual sem que ele precise reinstalar a ferramenta. O arquivo foi liberado para execução via `$PROFILE`.
+
+## Prompt #34
+**Contexto/Pergunta:** Notificação de sistema automática avisando que o processo em background `pwsh -Command "... cdd core"` havia sido cancelado manualmente pelo usuário.
+
+**Ação/Resposta:**
+1. Foi registrado que o cancelamento estava perfeitamente correto. O comando rodado anteriormente como teste procurou pela query `core`, a qual encontrou várias ocorrências, invocando automaticamente a Interface Gráfica Interativa no terminal (TUI - Inquire). Como era um processo invisível rodando em segundo plano pela IA, ele ficou aguardando as teclas (setas direcionais) do usuário para sempre até ser cancelado.
