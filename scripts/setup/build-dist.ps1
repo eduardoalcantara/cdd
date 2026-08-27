@@ -34,6 +34,7 @@ New-Item -ItemType Directory -Force -Path $PkgDir | Out-Null
 Copy-Item (Join-Path $RepoRoot "core\target\release\cdd.exe") -Destination $PkgDir -Force
 Copy-Item (Join-Path $RepoRoot "scripts\shell\cdd.ps1") -Destination $PkgDir -Force
 Copy-Item (Join-Path $RepoRoot "scripts\setup\install-user.ps1") -Destination (Join-Path $PkgDir "install.ps1") -Force
+Copy-Item (Join-Path $RepoRoot "scripts\setup\install-user.cmd") -Destination (Join-Path $PkgDir "install.cmd") -Force
 Copy-Item (Join-Path $RepoRoot "readme.md") -Destination (Join-Path $PkgDir "README.md") -Force
 Copy-Item (Join-Path $RepoRoot "docs\HOW_TO_USE.md") -Destination $PkgDir -Force
 Copy-Item (Join-Path $RepoRoot "docs\HOW_TO_INSTALL.md") -Destination $PkgDir -Force

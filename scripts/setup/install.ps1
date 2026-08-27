@@ -37,11 +37,11 @@ if (!$Quiet) {
     $ruleBot = $bl + ($h * $leftW) + $h + ($h * $rightW) + $br
     
     Write-Host $ruleTop -ForegroundColor Cyan
-    Write-Host "$v Projeto            $v cdd (Change Directory Directly)                          $v" -ForegroundColor Cyan
+    Write-Host "$v Projeto          $v cdd (Change Directory Directly)                        $v" -ForegroundColor Cyan
     if ($Uninstall) {
-        Write-Host "$v Acao               $v Desinstalacao do perfil do PowerShell                  $v" -ForegroundColor Cyan
+        Write-Host "$v Acao             $v Desinstalacao do perfil do PowerShell                  $v" -ForegroundColor Cyan
     } else {
-        Write-Host "$v Acao               $v Compilacao e Instalacao no Profile                     $v" -ForegroundColor Cyan
+        Write-Host "$v Acao             $v Compilacao e Instalacao no Profile                     $v" -ForegroundColor Cyan
     }
     Write-Host $ruleMid -ForegroundColor Cyan
     
@@ -49,7 +49,7 @@ if (!$Quiet) {
     $RootTxt = $RepoRoot.Path
     if ($RootTxt.Length -gt 54) { $RootTxt = $RootTxt.Substring(0, 54) } else { $RootTxt = $RootTxt.PadRight(54) }
     
-    Write-Host "$v Raiz detectada     $v $RootTxt $v" -ForegroundColor Cyan
+    Write-Host "$v Raiz detectada   $v $RootTxt $v" -ForegroundColor Cyan
     Write-Host $ruleBot -ForegroundColor Cyan
     Write-Host ""
 }

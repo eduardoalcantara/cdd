@@ -23,11 +23,11 @@ if (!$Quiet) {
     $ruleBot = $bl + ($h * $leftW) + $h + ($h * $rightW) + $br
     
     Write-Host $ruleTop -ForegroundColor Cyan
-    Write-Host "$v Projeto            $v cdd (Change Directory Directly)                          $v" -ForegroundColor Cyan
+    Write-Host "$v Projeto          $v cdd (Change Directory Directly)                        $v" -ForegroundColor Cyan
     if ($Uninstall) {
-        Write-Host "$v Acao               $v Desinstalacao do End-User Package                      $v" -ForegroundColor Cyan
+        Write-Host "$v Acao             $v Desinstalacao do End-User Package                      $v" -ForegroundColor Cyan
     } else {
-        Write-Host "$v Acao               $v Instalacao do Binario Autonomo                         $v" -ForegroundColor Cyan
+        Write-Host "$v Acao             $v Instalacao do Binario Autonomo                         $v" -ForegroundColor Cyan
     }
     Write-Host $ruleBot -ForegroundColor Cyan
     Write-Host ""

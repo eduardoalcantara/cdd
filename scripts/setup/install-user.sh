@@ -20,7 +20,7 @@ if [ "$QUIET" -eq 0 ]; then
     clear
     printf "\e[36m┌──────────────────┬────────────────────────────────────────────────────────┐\e[0m\n"
     printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Projeto" "cdd (Change Directory Directly)"
-    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Ação" "Instalação do Binário Autônomo"
+    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Acao" "Instalacao do Binario Autonomo"
     printf "\e[36m└──────────────────┴────────────────────────────────────────────────────────┘\e[0m\n\n"
 fi
 
