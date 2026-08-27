@@ -10,14 +10,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build and Package (Windows)
         run: .\scripts\setup\build-dist.ps1
         shell: pwsh
 
       - name: Upload Windows Asset
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-asset
           path: dist/
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Rust target and musl-tools
         run: |
@@ -38,7 +38,7 @@ jobs:
         run: bash ./scripts/setup/build-dist.sh
 
       - name: Upload Linux Asset
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-asset
           path: dist/
@@ -51,19 +51,19 @@ jobs:
       contents: write
     steps:
       - name: Download Windows Asset
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-asset
           path: dist
 
       - name: Download Linux Asset
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-asset
           path: dist
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             dist/cdd-windows-x86_64.zip

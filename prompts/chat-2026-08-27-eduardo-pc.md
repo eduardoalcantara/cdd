@@ -76,7 +76,7 @@
 
 **Ação/Resposta:**
 1. Esclarecida a natureza de execução do `cmd.exe`: diferentemente do PowerShell, um arquivo Batch (`.cmd` ou `.bat`) não precisa de "injeção de profile", pois ele é executado de forma "in-process" e possui a capacidade de alterar o diretório da própria janela que o chamou, bastando que seu diretório esteja acessível globalmente pelo Windows `%PATH%`.
-2. Foi criado e estruturado o arquivo `scripts/shell/cdd.cmd`, um wrapper contendo a lógica de ler a saída temporal do binário Rust (`for /f`) e aplicar o comando `cd /d` diretamente na sessão do CMD.
+2. Foi criado e estruturado o arquivo `scripts/shell/cdd.cmd`, wrapper contendo a lógica de ler a saída temporal do binário Rust (`for /f`) e aplicar o comando `cd /d` diretamente na sessão do CMD.
 3. A IA explicou como isso funciona e abordou um desafio técnico existente com a adição global no PATH quando os arquivos `.exe` e `.cmd` residem na mesma pasta: o Windows sempre prioriza arquivos executáveis (`.exe`) sobre batch (`.cmd`), o que anularia a interceptação. A estratégia a ser decidida seria discutida com o usuário a seguir.
 
 ## Prompt #37
@@ -101,10 +101,18 @@
 3. A IA ofereceu as orientações detalhadas de como realizar o envio de duas formas: Manualmente pelo site ou automatizado via Actions.
 
 ## Prompt #39
-**Contexto/Pergunta:** O usuário confirmou que deseja automatizar os lançamentos via GitHub Actions, argumentando que é muito melhor e mais prático.
+**Contexto/Pergunta:** O usuário confirmou que deseja automatizar os lançamentos via GitHub Actions.
 
 **Ação/Resposta:**
-1. **Criação do Workflow:** Criado o diretório `.github/workflows/` e o arquivo `release.yml`.
-2. **Configuração da Action:** O script foi configurado para disparar na criação de tags (`push: tags: - 'v*'`). Ele executa o build para Windows (em ambiente Windows rodando nosso script `.ps1`) e o build para Linux (em ambiente Ubuntu configurando ferramentas `musl-tools` para build estático e rodando nosso `.sh`).
-3. **Empacotamento Global:** A etapa final da action pega os artefatos `zip` e `tar.gz` e cria de forma unificada uma versão de Release oficial do GitHub contendo as changelogs.
-4. **Commit:** As mudanças foram enviadas para o repositório (`feat: setup github action to auto-publish releases on new tags`).
+1. **Criação do Workflow:** Criado o arquivo `.github/workflows/release.yml`.
+2. **Configuração da Action:** O script foi configurado para disparar na criação de tags (`push: tags: - 'v*'`).
+3. O usuário validou testando o fluxo através do GitHub, gerando a release `v0.1.0`.
+
+## Prompt #40
+**Contexto/Pergunta:** O usuário relatou que a Action rodou e postou capturas de tela indicando sucesso, mas que haviam 3 anotações (`Annotations: 3 warnings`) nos passos `build-linux`, `build-windows` e `publish-release` alertando que a versão do `Node.js 20 is deprecated` no GitHub Actions.
+
+**Ação/Resposta:**
+1. Realizada uma pesquisa web (`WebSearch`) para entender o cenário do ecossistema do GitHub Actions em agosto de 2026.
+2. Identificado que a engine padrão das Actions do GitHub encerrou suporte ao Node 20, exigindo que as actions passassem para suas versões mais atuais baseadas no Node 24.
+3. Atualizado o `.github/workflows/release.yml` modificando as versions das dependências oficiais da Action: `actions/checkout@v4` → `@v7`, `actions/upload-artifact@v4` → `@v7`, `actions/download-artifact@v4` → `@v8`, e `softprops/action-gh-release@v2` → `@v3`.
+4. Feito commit (`fix: bump github action versions to resolve node 20 deprecation warnings`) e push.
