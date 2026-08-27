@@ -70,3 +70,11 @@
 **Ação/Resposta:**
 1. A IA elaborou uma resposta detalhando a viabilidade e as razões técnicas que impedem que o simples fato de colocar o executável no PATH contorne o uso do `$PROFILE`.
 2. Informado que o instalador `install-user.ps1` já executa as cópias para `%LOCALAPPDATA%\cdd`, isolando o programa do problema do Google Drive, enquanto o instalador dev (`install.ps1`) não copia intencionalmente para permitir "live tests".
+
+## Prompt #36
+**Contexto/Pergunta:** O usuário clarificou que a intenção de copiar os arquivos era justamente para o pacote de release (end-user) e perguntou se o utilitário poderia ser executado no tradicional Prompt de Comando do Windows (CMD) utilizando um script de wrapper análogo ao PS1.
+
+**Ação/Resposta:**
+1. Esclarecida a natureza de execução do `cmd.exe`: diferentemente do PowerShell, um arquivo Batch (`.cmd` ou `.bat`) não precisa de "injeção de profile", pois ele é executado de forma "in-process" e possui a capacidade de alterar o diretório da própria janela que o chamou, bastando que seu diretório esteja acessível globalmente pelo Windows `%PATH%`.
+2. Foi criado e estruturado o arquivo `scripts/shell/cdd.cmd`, um wrapper contendo a lógica de ler a saída temporal do binário Rust (`for /f`) e aplicar o comando `cd /d` diretamente na sessão do CMD.
+3. A IA explicou como isso funciona e abordou um desafio técnico existente com a adição global no PATH quando os arquivos `.exe` e `.cmd` residem na mesma pasta: o Windows sempre prioriza arquivos executáveis (`.exe`) sobre batch (`.cmd`), o que anularia a interceptação. A estratégia a ser decidida seria discutida com o usuário a seguir.
