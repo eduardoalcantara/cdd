@@ -42,3 +42,10 @@
 1. **Geração do Pacote:** Rodado o script `.\scripts\setup\build-dist.ps1` com sucesso para recriar o zip de distribuição (`dist/cdd-windows-x86_64.zip`) para Windows com o `cdd.exe` atualizado.
 2. **Atualização do .prompt-status:** O arquivo `.prompt-status` foi atualizado apenas neste passo inicial (como `running`) e as atualizações que eram feitas no final foram cessadas; a duração é exibida apenas no rodapé.
 3. **Commits:** Realizado o commit das alterações nos scripts (traduções esquecidas no commit anterior) e feito push para o repositório remoto.
+
+## Prompt #32
+**Contexto/Pergunta:** O usuário pediu para refazer a instalação da ferramenta nesta máquina.
+
+**Ação/Resposta:**
+1. **Execução:** O arquivo `.\scripts\setup\install.cmd` foi executado com sucesso. Ele realizou o build limpo em modo release (`cargo build --release`) que demorou cerca de 5 segundos e injetou o wrapper perfeitamente no `$PROFILE` do usuário.
+2. **Log CCIA:** Atualizado o log indicando o procedimento realizado. O status do `.prompt-status` foi deixado intacto após o setup inicial conforme a nova regra imposta.
