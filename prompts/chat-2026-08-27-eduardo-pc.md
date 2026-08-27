@@ -99,3 +99,12 @@
 1. Verificamos a presença do GitHub CLI (`gh`), e constatamos que não está instalado na máquina.
 2. A IA esclareceu que o token de acesso que o Git for Windows está usando serve estritamente para ações do Git (Push/Pull de código e Tags), mas o Git sozinho não faz o upload de "Release Assets" (como o zip/tar.gz). Isso é função exclusiva do GitHub.
 3. A IA ofereceu as orientações detalhadas de como realizar o envio de duas formas: Manualmente pelo site ou automatizado via Actions.
+
+## Prompt #39
+**Contexto/Pergunta:** O usuário confirmou que deseja automatizar os lançamentos via GitHub Actions, argumentando que é muito melhor e mais prático.
+
+**Ação/Resposta:**
+1. **Criação do Workflow:** Criado o diretório `.github/workflows/` e o arquivo `release.yml`.
+2. **Configuração da Action:** O script foi configurado para disparar na criação de tags (`push: tags: - 'v*'`). Ele executa o build para Windows (em ambiente Windows rodando nosso script `.ps1`) e o build para Linux (em ambiente Ubuntu configurando ferramentas `musl-tools` para build estático e rodando nosso `.sh`).
+3. **Empacotamento Global:** A etapa final da action pega os artefatos `zip` e `tar.gz` e cria de forma unificada uma versão de Release oficial do GitHub contendo as changelogs.
+4. **Commit:** As mudanças foram enviadas para o repositório (`feat: setup github action to auto-publish releases on new tags`).

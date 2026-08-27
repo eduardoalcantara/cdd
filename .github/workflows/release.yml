@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and Package (Windows)
+        run: .\scripts\setup\build-dist.ps1
+        shell: pwsh
+
+      - name: Upload Windows Asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-asset
+          path: dist/
+          retention-days: 1
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust target and musl-tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y musl-tools
+          rustup target add x86_64-unknown-linux-musl
+
+      - name: Build and Package (Linux)
+        run: bash ./scripts/setup/build-dist.sh
+
+      - name: Upload Linux Asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-asset
+          path: dist/
+          retention-days: 1
+
+  publish-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows Asset
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-asset
+          path: dist
+
+      - name: Download Linux Asset
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-asset
+          path: dist
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/cdd-windows-x86_64.zip
+            dist/cdd-windows-x86_64.zip.sha256
+            dist/cdd-linux-x86_64.tar.gz
+            dist/cdd-linux-x86_64.tar.gz.sha256
+          generate_release_notes: true
