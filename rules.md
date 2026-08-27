@@ -59,7 +59,9 @@ Pause e peça esclarecimento quando:
 
 - Alterar `spec-root.md` somente com intenção explícita de mudar a arquitetura.
 - Ao mudar regras permanentes, atualizar este arquivo e refletir em `.cursorrules` / `flow.md` se necessário.
-- Ao concluir prompts, atualizar `.prompt-status` sem perder o histórico recente.
+- `.prompt-status` registra só o **início** do prompt atual (`running` + hora de início + LLM + resumo). Não gravar fim, duração do prompt atual nem status final no arquivo.
+- Ao iniciar um prompt novo, preservar o prompt anterior em `[last]`, calculando a duração como `now() - start_time` daquele prompt.
+- O Tempo exibido no rodapé da resposta é sempre `now() - current_prompt_start_time`, calculado na hora de responder.
 
 ## CCIA: Continuidade de Contexto para IA
 

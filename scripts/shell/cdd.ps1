@@ -21,22 +21,29 @@ function cdd {
     } else {
         if (!(Get-Command $CddBin -ErrorAction SilentlyContinue)) {
             Write-Host "cdd: comando não encontrado. Certifique-se de que o binário Rust foi compilado." -ForegroundColor Red
+            $global:LASTEXITCODE = 127
             return
         }
     }
 
     # Use a temporary file for communication
     $TmpFile = [System.IO.Path]::GetTempFileName()
-    
-    # Pass arguments to the rust binary
-    & $CddBin $args --cdd-out-file $TmpFile
+    $CddExitCode = 1
 
-    if ($LASTEXITCODE -eq 0 -and (Get-Item $TmpFile).Length -gt 0) {
-        $TargetDir = Get-Content $TmpFile -Raw
-        if (Test-Path $TargetDir -PathType Container) {
-            Set-Location $TargetDir
+    try {
+        # Pass arguments to the rust binary
+        & $CddBin $args --cdd-out-file $TmpFile
+        $CddExitCode = $LASTEXITCODE
+
+        if ($CddExitCode -eq 0 -and (Get-Item $TmpFile).Length -gt 0) {
+            $TargetDir = (Get-Content $TmpFile -Raw).TrimEnd([char[]]"`r`n")
+            if (Test-Path -LiteralPath $TargetDir -PathType Container) {
+                Set-Location -LiteralPath $TargetDir
+            }
         }
+    } finally {
+        Remove-Item $TmpFile -Force -ErrorAction SilentlyContinue
     }
 
-    Remove-Item $TmpFile -Force -ErrorAction SilentlyContinue
+    $global:LASTEXITCODE = $CddExitCode
 }

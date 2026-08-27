@@ -2,38 +2,39 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ListOrder {
     Ascending,
     Descending,
+    #[default]
     Find,
 }
 
-impl Default for ListOrder {
-    fn default() -> Self {
-        ListOrder::Find
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QueryOrder {
+    #[default]
     Sequential,
     Inverse,
     Any,
 }
 
-impl Default for QueryOrder {
-    fn default() -> Self {
-        QueryOrder::Sequential
-    }
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct StickyState {
+    pub lucky_pick: bool,
+    pub list_size: bool,
+    pub list_order: bool,
+    pub query_order: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Config {
     pub lucky_pick: bool,
     pub list_size: u32,
     pub list_order: ListOrder,
     pub query_order: QueryOrder,
+    pub sticky: StickyState,
 }
 
 impl Default for Config {
@@ -43,6 +44,7 @@ impl Default for Config {
             list_size: 10,
             list_order: ListOrder::default(),
             query_order: QueryOrder::default(),
+            sticky: StickyState::default(),
         }
     }
 }
@@ -59,12 +61,22 @@ impl Config {
 
     pub fn load() -> Self {
         let path = Self::config_path();
-        if path.exists() {
-            if let Ok(content) = std::fs::read_to_string(path) {
-                if let Ok(config) = serde_json::from_str(&content) {
-                    return config;
-                }
+        if path.exists()
+            && let Ok(content) = std::fs::read_to_string(path)
+            && let Ok(mut config) = serde_json::from_str::<Config>(&content)
+        {
+            let has_sticky_metadata = serde_json::from_str::<serde_json::Value>(&content)
+                .ok()
+                .and_then(|value| {
+                    value
+                        .as_object()
+                        .map(|object| object.contains_key("sticky"))
+                })
+                .unwrap_or(false);
+            if !has_sticky_metadata {
+                config.infer_legacy_sticky_state();
             }
+            return config;
         }
         Self::default()
     }
@@ -77,5 +89,87 @@ impl Config {
         let content = serde_json::to_string_pretty(self)?;
         std::fs::write(path, content)?;
         Ok(())
+    }
+
+    pub fn active_filter_labels(&self) -> Vec<String> {
+        let mut labels = Vec::new();
+
+        if self.sticky.lucky_pick {
+            labels.push("-1=on".to_string());
+        }
+        if self.sticky.list_size {
+            labels.push(format!("-{}=on", self.list_size));
+        }
+        if self.sticky.list_order {
+            let flag = match self.list_order {
+                ListOrder::Ascending => "-oa",
+                ListOrder::Descending => "-od",
+                ListOrder::Find => "-of",
+            };
+            labels.push(format!("{flag}=on"));
+        }
+        if self.sticky.query_order {
+            let flag = match self.query_order {
+                QueryOrder::Sequential => "-qs",
+                QueryOrder::Inverse => "-qi",
+                QueryOrder::Any => "-qa",
+            };
+            labels.push(format!("{flag}=on"));
+        }
+
+        labels
+    }
+
+    fn infer_legacy_sticky_state(&mut self) {
+        self.sticky.lucky_pick = self.lucky_pick;
+        self.sticky.list_size = self.list_size != Config::default().list_size;
+        self.sticky.list_order = self.list_order != ListOrder::default();
+        self.sticky.query_order = self.query_order != QueryOrder::default();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn old_config_values_can_be_migrated_to_sticky_metadata() {
+        let json = r#"{
+            "lucky_pick": true,
+            "list_size": 15,
+            "list_order": "Ascending",
+            "query_order": "Any"
+        }"#;
+
+        let mut config: Config = serde_json::from_str(json).unwrap();
+        config.infer_legacy_sticky_state();
+
+        assert!(config.lucky_pick);
+        assert_eq!(config.list_size, 15);
+        assert_eq!(
+            config.active_filter_labels(),
+            vec!["-1=on", "-15=on", "-oa=on", "-qa=on"]
+        );
+    }
+
+    #[test]
+    fn active_filter_labels_include_explicit_default_values() {
+        let config = Config {
+            list_size: 10,
+            list_order: ListOrder::Find,
+            query_order: QueryOrder::Sequential,
+            sticky: StickyState {
+                list_size: true,
+                list_order: true,
+                query_order: true,
+                ..StickyState::default()
+            },
+            ..Config::default()
+        };
+
+        assert_eq!(
+            config.active_filter_labels(),
+            vec!["-10=on", "-of=on", "-qs=on"]
+        );
     }
 }

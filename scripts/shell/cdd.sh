@@ -28,21 +28,24 @@ function cdd() {
 
     # Create a temporary file to store the result
     local TMP_FILE
-    TMP_FILE=$(mktemp -t cdd_result.XXXXXX)
+    if ! TMP_FILE=$(mktemp -t cdd_result.XXXXXX); then
+        echo "cdd: não foi possível criar o arquivo temporário." >&2
+        return 1
+    fi
 
     # Execute the Rust binary passing all arguments and the temp file path
     "$CDD_BIN" "$@" --cdd-out-file "$TMP_FILE"
-    
+
     local EXIT_CODE=$?
-    
-    if [ $EXIT_CODE -eq 0 ] && [ -s "$TMP_FILE" ]; then
+
+    if [ "$EXIT_CODE" -eq 0 ] && [ -s "$TMP_FILE" ]; then
         local TARGET_DIR
-        TARGET_DIR=$(cat "$TMP_FILE")
+        IFS= read -r TARGET_DIR < "$TMP_FILE"
         if [ -d "$TARGET_DIR" ]; then
-            cd "$TARGET_DIR"
+            cd "$TARGET_DIR" || EXIT_CODE=1
         fi
     fi
 
     rm -f "$TMP_FILE"
-    return $EXIT_CODE
+    return "$EXIT_CODE"
 }

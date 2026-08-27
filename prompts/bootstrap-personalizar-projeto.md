@@ -19,5 +19,5 @@ Execute as seguintes ações:
 3. Escreva a primeira documentação de especificações sobre os detalhes técnicos discutidos acima em `specs/to-do/SPEC-core.md`.
 4. Atualize o `status.md` (removendo as tarefas sobre a criação do template genérico e começando as do novo projeto).
 5. Faça um lançamento de marco cronológico no `timeline.md`.
-6. Após as alterações, leia o arquivo e crie o sumário executivo em `.prompt-status` e siga os procedimentos CCIA anexando as respostas aos logs `prompts/chat...` da sessão de hoje.
+6. Após as alterações, atualize `.prompt-status` **somente no início** (número, hora de início, LLM, resumo) e siga os procedimentos CCIA anexando as respostas aos logs `prompts/chat...` da sessão de hoje. Não grave fim nem duração do prompt atual nesse arquivo.
 ```

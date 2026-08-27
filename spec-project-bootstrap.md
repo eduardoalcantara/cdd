@@ -34,7 +34,7 @@ Tudo que for específico do projeto deve viver sob `/core` sempre que isso não 
 Todo projeto deve conter um arquivo `.prompt-status` na raiz para rastrear a execução de cada prompt/tarefa do Cursor AI.
 
 ### 1.7 Rastreamento de execução é obrigatório
-Antes de executar um prompt, o Cursor AI deve ler `.prompt-status`; ao iniciar e ao concluir a tarefa, deve atualizar esse arquivo com o estado atual, o LLM em uso e o resultado obtido.
+Antes de executar um prompt, o Cursor AI deve ler `.prompt-status` e atualizá-lo **somente no início** (hora de início, LLM, resumo, `running`). O fim não é gravado no arquivo: a duração exibida no rodapé da resposta é `now() - current_prompt_start_time`.
 
 ---
 
@@ -107,7 +107,7 @@ Lista ferramentas, pacotes e comandos relevantes para Windows.
 Define comportamento, honestidade, limites e formato de resposta do agente no repositório.
 
 ### 3.12 `.prompt-status`
-Rastreia o prompt em andamento, o último prompt concluído, o LLM utilizado, a duração e os acumulados de execução.
+Rastreia o prompt em andamento (início, LLM, resumo) e o último prompt já iniciado (promovido no começo do seguinte). A duração do prompt **atual** não vive neste arquivo: é `now() - current_prompt_start_time` no rodapé da resposta.
 
 ### 3.13 `spec-template.md`
 Fornece o molde para novas specs do projeto.
@@ -181,7 +181,7 @@ Armazena o conteúdo específico do projeto, incluindo pastas de domínio, arqui
 - Checklist de execução.
 - Passos de validação.
 - Passos de encerramento.
-- Leitura e atualização de `.prompt-status` no início e no fim de cada prompt.
+- Leitura de `.prompt-status` e atualização **somente no início** de cada prompt (o fim não é gravado no arquivo).
 
 ### 4.5 `rules.md`
 - Hierarquia normativa.
@@ -248,14 +248,11 @@ Armazena o conteúdo específico do projeto, incluindo pastas de domínio, arqui
 - Regras de leitura e atualização de `.prompt-status`.
 
 ### 4.12 `.prompt-status`
-- Prompt em andamento.
-- Último prompt concluído.
+- Prompt em andamento (número, hora de **início**, LLM, resumo, status `running`).
+- Último prompt (promovido no **início** do prompt seguinte), com duração calculada naquele momento.
 - LLM atual e LLM anterior, quando relevante.
-- Datas e horários de início e fim.
-- Duração da tarefa.
-- Status da execução.
-- Resumo curto da tarefa.
-- Acumulados de prompts e tempo.
+- Acumulados de prompts e tempo (somente prompts já promovidos a `[last]`).
+- **Não** contém hora de fim nem status final do prompt atual. O Tempo do rodapé é `now() - current_prompt_start_time`.
 
 ### 4.13 `spec-template.md`
 - Título.
@@ -373,7 +370,7 @@ Toda resposta relevante deve privilegiar:
 - quais arquivos foram impactados;
 - qual o próximo passo;
 - quais documentos justificam a ação.
-- OBRIGATÓRIO: Terminar a resposta com o resumo do `.prompt-status` na última linha: `[Prompt #X | LLM: <Nome> | Tempo: <Tempo>]` (se durar > 60s, exiba em minutos e segundos, ex: `1m 30s`)
+- OBRIGATÓRIO: Terminar a resposta com o resumo na última linha: `[Prompt #X | LLM: <Nome> | Tempo: <Tempo>]`. `X` e LLM vêm de `.prompt-status`; `Tempo` = `now() - current_prompt_start_time` (se > 60s, exiba em minutos e segundos, ex: `1m 30s`). Não gravar esse Tempo no arquivo.
 
 ### 5.4 Leitura obrigatória
 Antes de agir, o agente deve ler os documentos-raiz relevantes.
@@ -399,11 +396,13 @@ Sempre que o usuário precisar tomar uma escolha, o script deve exibir uma lista
 
 ### 5.10 Regras de `.prompt-status`
 - Ler `.prompt-status` antes de iniciar qualquer prompt.
-- Atualizar `.prompt-status` no início e no fim de cada prompt.
-- Registrar o LLM usado na execução atual.
-- Registrar o tempo de início, fim e duração.
-- Registrar o status final e um resumo curto da tarefa.
-- Preservar o histórico recente sem sobrescrever o que já foi concluído.
+- Atualizar `.prompt-status` **somente no início** de cada prompt.
+- Registrar o LLM usado na execução atual, a hora real de início e um resumo curto.
+- Status persistido em `[current]`: somente `running`. Não gravar `success`, `blocked` nem `failed`.
+- Não gravar hora de fim nem duração do prompt atual no arquivo. Motivo: commit/push costuma ocorrer antes de qualquer escrita final, deixando o arquivo "aberto".
+- O Tempo do rodapé da resposta é `now() - current_prompt_start_time`.
+- Ao iniciar um prompt novo, promover `[current]` para `[last]` e gravar `last_prompt_duration_seconds` = `now() - start_time` do prompt anterior.
+- Preservar o histórico recente em `[last]` sem inventar um fechamento tardio do prompt atual.
 
 ### 5.11 CCIA: Continuidade de Contexto para IA
 Para lidar com o problema de fragmentação de histórico (diferentes instâncias do Cursor nas máquinas ou Cloud Agents), o agente deve SEMPRE:
@@ -431,7 +430,7 @@ O `flow.md` deve orientar a sequência de trabalho no repositório.
 11. Validar o que foi feito.
 12. Atualizar `status.md`.
 13. Atualizar `timeline.md`.
-14. Atualizar `.prompt-status` ao concluir a execução.
+14. Não atualizar `.prompt-status` ao concluir; o Tempo do rodapé é `now() - current_prompt_start_time`.
 15. Produzir relatório de entrega.
 16. Registrar próximos passos.
 
@@ -440,7 +439,7 @@ O `flow.md` deve orientar a sequência de trabalho no repositório.
 - Não começar implementação sem contexto.
 - Não misturar grupos ou temas sem autorização.
 - Encerrar cada tarefa com validação e atualização documental.
-- Nenhum prompt deve ser tratado como concluído sem atualizar `.prompt-status`.
+- Não gravar o fim do prompt em `.prompt-status` (duração só no rodapé, via `now() - current_prompt_start_time`).
 
 ---
 
@@ -519,7 +518,7 @@ Um novo repositório está realmente pronto quando o Cursor consegue responder, 
 - onde ficam as referências;
 - onde fica o núcleo específico do projeto;
 - como o agente deve se comportar;
-- como rastrear o início, o fim e o estado de cada prompt em `.prompt-status`.
+- como rastrear o início de cada prompt em `.prompt-status` e calcular a duração na resposta (`now() - current_prompt_start_time`).
 
 ---
 
@@ -534,25 +533,27 @@ O arquivo `.prompt-status` deve usar um formato simples de pares `chave = valor`
 - `current_prompt_llm`
 - `current_prompt_summary`
 
-### 11.2 Seção de último prompt concluído
+### 11.2 Seção de último prompt
 - `last_prompt_number`
 - `last_prompt_start_time`
-- `last_prompt_end_time`
-- `last_prompt_duration_seconds`
-- `last_prompt_status`
+- `last_prompt_duration_seconds` (preenchido só ao **iniciar** o prompt seguinte: `now() - last_prompt_start_time`)
 - `last_prompt_llm`
 - `last_prompt_summary`
+
+Não incluir `*_end_time` nem status final (`success` / `blocked` / `failed`).
 
 ### 11.3 Seção de acumulados
 - `total_prompts_tracked`
 - `total_execution_seconds`
 
 ### 11.4 Regras do template
-- Os horários devem refletir a hora real do sistema.
+- Os horários de início devem refletir a hora real do sistema.
 - O resumo deve ser curto e objetivo.
-- O status deve ser explícito, como `running`, `success`, `blocked` ou `failed`.
+- O status em `[current]` é somente `running`.
 - O campo de LLM deve identificar claramente o modelo usado na tarefa.
-- O arquivo deve ser atualizado sem perder o histórico recente da execução anterior.
+- Atualizar o arquivo **somente no início** de um prompt. Nunca gravar o fim do prompt atual.
+- Ao iniciar um prompt novo, promover `[current]` para `[last]` sem perder o histórico recente.
+- A duração exibida ao usuário (rodapé do chat) é sempre `now() - current_prompt_start_time`, não um campo do arquivo.
 
 ---
 

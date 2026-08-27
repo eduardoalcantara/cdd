@@ -19,13 +19,13 @@ Não pular a leitura obrigatória. Não começar implementação sem contexto.
 1. Ler os documentos-raiz na ordem acima.
 2. Identificar o escopo confirmado da tarefa.
 3. Planejar a entrega (arquivos, validações, impactos).
-4. Atualizar `.prompt-status` no início (`current_prompt_status = running`).
+4. Atualizar `.prompt-status` **somente no início** (`current_prompt_status = running`, hora de início, LLM, resumo). Se já houver um `[current]`, promovê-lo a `[last]` com duração `now() - start_time` anterior.
 5. Implementar ou documentar somente o escopo confirmado.
 6. Validar o que foi feito.
 7. Atualizar `status.md`.
 8. Atualizar `timeline.md`.
 9. Produzir relatório em `reports/` quando a entrega for material.
-10. Atualizar `.prompt-status` ao concluir (`success`, `blocked` ou `failed`).
+10. **Não** atualizar `.prompt-status` ao concluir. O Tempo do rodapé é `now() - current_prompt_start_time`.
 11. Registrar próximos passos na resposta e em `status.md`.
 
 ## Ordem de decisões
@@ -46,14 +46,14 @@ Antes de mudanças amplas (refactors, remoções, mudança de arquitetura):
 ## Checklist de execução
 
 - [ ] Documentos-raiz lidos
-- [ ] `.prompt-status` atualizado no início
+- [ ] `.prompt-status` atualizado no início (somente início)
 - [ ] Escopo confirmado
 - [ ] Implementação limitada ao escopo
 - [ ] Validações executadas ou declaradas como pendentes
 - [ ] `status.md` atualizado
 - [ ] `timeline.md` atualizado
 - [ ] Relatório criado (se aplicável)
-- [ ] `.prompt-status` atualizado no fim
+- [ ] Rodapé do chat com Tempo = `now() - current_prompt_start_time` (sem gravar fim no arquivo)
 
 ## Passos de validação
 
@@ -63,14 +63,14 @@ Antes de mudanças amplas (refactors, remoções, mudança de arquitetura):
 
 ## Passos de encerramento
 
-1. Atualizar `.prompt-status` com fim, duração, LLM, status e resumo.
+1. Não gravar fim em `.prompt-status`. Calcular o Tempo do rodapé como `now() - current_prompt_start_time`.
 2. Responder com: alterações, validações, pendências, arquivos impactados, próximo passo, documentos que justificam a ação.
-3. Nenhum prompt deve ser tratado como concluído sem atualizar `.prompt-status`.
+3. Anexar o prompt e o resumo da resposta no log CCIA (`prompts/chat-YYYY-MM-DD-<hostname>.md`).
 
 ## Leitura e atualização de `.prompt-status`
 
 | Momento | Ação |
 |---|---|
 | Antes de iniciar | Ler o arquivo |
-| No início | Preencher seção `[current]` com status `running` |
-| No fim | Mover/atualizar `[last]`, limpar ou fechar `[current]`, atualizar `[totals]` |
+| No início | Promover `[current]` anterior para `[last]` (duração = `now() - start_time` anterior); preencher `[current]` com `running` e hora de início |
+| No fim | Não alterar o arquivo. O Tempo do rodapé é `now() - current_prompt_start_time` |

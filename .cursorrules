@@ -24,11 +24,10 @@
 
 ## Fluxo de `.prompt-status`
 - Ler `.prompt-status` antes de iniciar qualquer prompt.
-- Atualizar `.prompt-status` no início (status `running`) e no fim da execução.
-- Registrar o LLM usado, horários reais de início/fim, duração e resumo curto.
-- Status finais: `success`, `blocked` ou `failed`.
-- Preservar o histórico do último prompt concluído ao iniciar um novo.
-- Nenhum prompt deve ser tratado como concluído sem atualizar `.prompt-status`.
+- Atualizar `.prompt-status` **somente no início** do prompt: número, `current_prompt_start_time` (hora real do sistema), LLM, resumo curto e `current_prompt_status = running`.
+- Ao iniciar um prompt novo, mover o `[current]` anterior para `[last]`. A duração do prompt anterior é `now() - last_prompt_start_time` (em segundos) e entra em `last_prompt_duration_seconds` e em `[totals]`.
+- **Proibido gravar o fim do prompt atual neste arquivo.** Não escrever `*_end_time`, duração do prompt atual, nem status `success` / `blocked` / `failed`. Motivo: commit/push costuma ocorrer antes da última escrita; o arquivo ficaria eternamente "aberto".
+- O **Tempo do rodapé** não é lido do arquivo: é `now() - current_prompt_start_time`. Se a duração for > 60s, exibir como minutos e segundos (ex: `1m 15s`); caso contrário, em segundos.
 
 ## Dados mínimos por resposta relevante
 Toda resposta de entrega deve privilegiar:
@@ -43,8 +42,10 @@ Toda resposta de entrega deve privilegiar:
 - Responder no idioma do usuário (padrão: português).
 - Ser direto; não encher a resposta com preâmbulos.
 - Citar documentos-raiz quando a ação depender deles.
-- **OBRIGATÓRIO**: A última linha da sua resposta no chat DEVE conter o bloco de resumo extraído do `.prompt-status`, neste formato:
-  `[Prompt #X | LLM: <Nome> | Tempo: <Tempo>]` (onde Tempo exibe em segundos, ou minutos e segundos se durar > 60s, ex: `1m 15s`)
+- **OBRIGATÓRIO**: A última linha da sua resposta no chat DEVE conter o bloco de resumo, neste formato:
+  `[Prompt #X | LLM: <Nome> | Tempo: <Tempo>]`
+  - `X` e o LLM vêm de `.prompt-status` (`current_prompt_number`, `current_prompt_llm`).
+  - `Tempo` = `now() - current_prompt_start_time` (não gravar esse valor no arquivo). Se > 60s, exibir como minutos e segundos (ex: `1m 15s`).
 
 ## CCIA: Continuidade de Contexto para IA
 - Para evitar perda de contexto entre instâncias remotas/locais (ex: Cloud Agents, PCs diferentes), grave TODO PROMPT recebido e UM RESUMO DA RESPOSTA num log contínuo.

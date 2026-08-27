@@ -1,19 +1,28 @@
 # core/
 
-Núcleo específico do projeto.
+Binário Rust do `cdd`.
 
-Tudo que for próprio do domínio (código, modelos, schemas, componentes, ativos, firmware, CAD, etc.) deve viver aqui — sempre que isso não contrariar o padrão da tecnologia.
+## Desenvolvimento
 
-## Exemplos por domínio
+```bash
+cargo build
+cargo test
+cargo clippy --all-targets -- -D warnings
+```
 
-| Domínio | Subpastas possíveis |
-|---|---|
-| Software | `src/`, `tests/`, `api/`, `packages/` |
-| Hardware | `cad/`, `bom/`, `schematics/`, `firmware/` |
-| Sistema operacional | `profiles/`, `policies/`, `services/` |
-| Impressão 3D | `models/`, `slicing/`, `materials/` |
-| Híbrido | combinação das acima |
+Ajuda:
 
-## Regra
+```bash
+cargo run -- --help
+```
 
-A governança do repositório fica na raiz; o produto/domínio fica em `/core`.
+## Módulos
+
+- `args.rs`: parser, validação e sticky settings.
+- `config.rs`: configuração JSON retrocompatível.
+- `pattern.rs`: correspondência parcial literal e curingas `*`/`?`.
+- `search.rs`: varredura concorrente, modos de query e ordenação.
+- `tui.rs`: seleção interativa.
+- `help.rs`: ajuda integrada.
+
+O argumento interno `--cdd-out-file` é usado exclusivamente pelos wrappers para comunicar o diretório escolhido sem capturar a saída da TUI.

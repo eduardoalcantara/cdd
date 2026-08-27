@@ -2,7 +2,7 @@
 
 ## Propósito do projeto
 
-O comando `cdd` (Change Directory Directly) existe para acelerar a navegação de diretórios via terminal, permitindo encontrar e mudar para pastas baseando-se em pesquisas fuzzy ou parâmetros sequenciais, sem exigir o path completo.
+O comando `cdd` (Change Directory Directly) existe para acelerar a navegação de diretórios via terminal, permitindo encontrar e mudar para pastas por correspondência parcial literal, curingas explícitos ou parâmetros sequenciais, sem exigir o path completo.
 
 Este repositório nasce a partir do template universal definido em `spec-project-bootstrap.md`, com estrutura documental completa e orientação explícita para o Cursor AI.
 
@@ -20,12 +20,14 @@ Este repositório nasce a partir do template universal definido em `spec-project
 3. **Contexto explícito para o agente** — regras, fluxo, estado e histórico visíveis.
 4. **Formato universal, conteúdo adaptável** — espinha dorsal fixa; interior muda por domínio.
 5. **`/core` concentra o específico** — salvo quando o padrão da tecnologia exigir outro local.
-6. **`.prompt-status` é obrigatório** — todo prompt é rastreado do início ao fim.
+6. **`.prompt-status` é obrigatório** — todo prompt é rastreado no **início**; o fim (duração) é calculado na resposta como `now() - current_prompt_start_time` e **não** é gravado no arquivo.
 
 ## Escopo
 
 - Implementar a CLI `cdd` cross-platform (binário compilado em Rust + Shell Wrappers em Bash/PowerShell).
-- Suportar fuzzy finding, wildcards nativos e menus interativos customizados.
+- Suportar busca parcial case-insensitive, curingas nativos `*`/`?` por nome de diretório e menus interativos customizados.
+- Não realizar fuzzy matching, autocorreção nem seleção por aproximação: uma query incorreta deve falhar sem sugerir ou escolher outro diretório.
+- Oferecer ajuda integrada por `-h` e `--help`.
 - Manter o comportamento das flags configuráveis (sticky settings com modo `:on` e `:off`).
 - Manter a estrutura documental e operacional do template original para garantir que o Cursor consiga operar sem ambiguidade.
 
@@ -60,7 +62,7 @@ raiz documental (governança)
 ## Regras permanentes
 
 - Não implementar fora do escopo confirmado.
-- Não tratar prompt como concluído sem atualizar `.prompt-status`.
+- `.prompt-status` registra só o início do prompt atual; não gravar fim nem status final no arquivo.
 - Não colocar conteúdo específico do projeto fora de `/core` sem justificativa normativa.
 - Mudanças relevantes atualizam `status.md` e `timeline.md`.
 
@@ -74,7 +76,7 @@ O repositório está pronto quando o Cursor responde sem ambiguidade:
 - como documentar progresso;
 - onde ficam referências e o núcleo em `/core`;
 - como o agente se comporta;
-- como rastrear cada prompt em `.prompt-status`.
+- como rastrear o **início** de cada prompt em `.prompt-status` (a duração sai no rodapé: `now() - current_prompt_start_time`).
 
 ## Conclusão normativa
 

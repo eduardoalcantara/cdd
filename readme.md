@@ -4,14 +4,48 @@
 
 ## Resumo
 
-O `cdd` é um utilitário CLI que revoluciona a forma de navegar em diretórios no terminal. Diferente do comando `cd` padrão que demanda o caminho exato (`cd /var/www/applications/app1`), o `cdd` aceita parâmetros de pesquisa nebulosos (fuzzy/parciais). 
+O `cdd` encontra diretórios por trechos do nome ou por curingas explícitos e muda o diretório do shell atual através de um wrapper Bash/Zsh ou PowerShell.
 
-Basta digitar `cdd www app1` e, se esse for o único resultado plausível no sistema, ele te leva para lá instantaneamente. Se houver múltiplos diretórios correspondentes, uma lista interativa minimalista será exibida para você navegar (usando setas) e selecionar com ENTER o destino.
+```bash
+cdd www app1
+cdd 'proj*' 'app?'
+cdd --help
+```
 
-## Público e objetivo
+Termos comuns usam correspondência parcial case-insensitive. `*` corresponde a zero ou mais caracteres e `?` a exatamente um caractere no nome de um diretório. O projeto não usa fuzzy matching nem autocorreção.
 
-- **Público:** Desenvolvedores, sysadmins e power users que trabalham extensivamente em terminais no Linux (Bash/Zsh) ou Windows (PowerShell).
-- **Objetivo:** Fornecer navegação super rápida através de buscas indexadas de glob patterns, suportando flags flexíveis que podem ser persistidas no perfil do usuário.
+No Bash/Zsh, coloque curingas entre aspas para impedir a expansão antecipada pelo shell.
+
+## Principais recursos
+
+- Busca a partir de `/` no Linux/WSL ou do drive atual no Windows.
+- Queries sequenciais, inversas ou em qualquer ordem.
+- Curingas explícitos `*` e `?`.
+- Lista interativa com 10 linhas visíveis por padrão.
+- Filtro textual literal sobre todos os resultados encontrados.
+- Configurações persistentes com `:on` e `:off`.
+- Ajuda integrada por `cdd --help`.
+- Instalação e desinstalação reversíveis.
+
+## Instalação rápida
+
+- Desenvolvimento (compila com Rust): `scripts/setup/install.sh` ou `install.ps1`.
+- Pacote pré-compilado: extraia o `.tar.gz`/`.zip` e execute o `install.sh`/`install.ps1` incluído.
+- Distribuição: `scripts/setup/build-dist.sh` ou `build-dist.ps1`.
+
+Instruções completas: [`docs/HOW_TO_INSTALL.md`](docs/HOW_TO_INSTALL.md).
+
+## Uso rápido
+
+```bash
+cdd linux
+cdd projetos api
+cdd 'proj*' 'app?'
+cdd linux -20
+cdd --help
+```
+
+Guia completo: [`docs/HOW_TO_USE.md`](docs/HOW_TO_USE.md).
 
 ## Estrutura de alto nível
 
@@ -32,14 +66,17 @@ Basta digitar `cdd www app1` e, se esse for o único resultado plausível no sis
 
 1. Clone o repositório.
 2. Certifique-se de possuir o toolchain do **Rust** instalado (`cargo`).
-3. O código fonte está contido em `/core`. Para desenvolver as implementações da TUI e do sistema de busca, navegue até esta pasta.
-4. Para as documentações e diretrizes de contribuição, leia nesta ordem: `spec-root.md` → `rules.md` → `flow.md`.
-5. Detalhes de arquitetura de software estão em `specs/`.
+3. Execute `cd core && cargo test`.
+4. Execute o instalador da sua plataforma.
+5. Consulte `cdd --help`.
 
 Detalhes de ambiente: ver `setup.md`, `tools-linux.md` e `tools-windows.md`.
 
 ## Documentação relacionada
 
+- Uso: [`docs/HOW_TO_USE.md`](docs/HOW_TO_USE.md)
+- Instalação: [`docs/HOW_TO_INSTALL.md`](docs/HOW_TO_INSTALL.md)
+- Arquitetura e algoritmo: [`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md)
 - Fundação do template: `spec-project-bootstrap.md`
 - Fluxo do agente: `flow.md`
 - Regras permanentes: `rules.md`

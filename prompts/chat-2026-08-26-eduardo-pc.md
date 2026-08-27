@@ -95,3 +95,21 @@
 1. Avaliado o status atual do git (arquivos untracked, modificados, diff).
 2. Atualizado o log do CCIA para incluir o andamento de todos os prompts de hoje até o momento do commit, a fim de preservar o contexto remoto.
 3. Executado `git add`, `git commit` descrevendo as evoluções (de template para o comando cdd em Rust/Shell) e feito o `git push` para sincronizar no remoto.
+
+## Prompt #17
+**Contexto/Pergunta:** O usuário pediu análise do repositório e, em seguida, análise de `prompts/chat-2026-08-26-eduardo-pc.md`. Máquina atual: hostname `thinkpad` (Arch Linux), distinta do nome do log (`eduardo-pc`).
+
+**Ação/Resposta:**
+1. Leitura obrigatória (`spec-root.md`, `rules.md`, `.cursorrules`, `.prompt-status`, `status.md`, `timeline.md`, `SPEC-cdd-core.md`) e varredura do código em `core/` e scripts.
+2. Diagnóstico: o core MVP existe (Rust + wrappers + install/dist), mas há drift documental e gaps vs spec (fuzzy/glob, header de filtros, spec ainda em `to-do/`, `status.md` desatualizado).
+3. O log CCIA cobre prompts #6–#16 de forma útil, porém resumida; o Prompt #16 ficou `running` no `.prompt-status` apesar do commit `738711b` ter sido feito. Prompts #1–#5 não estão no arquivo.
+4. Encerrado o Prompt #16 como `success` e registrado este prompt (#17) no `.prompt-status`.
+
+## Prompt #18
+**Contexto/Pergunta:** (1) O `.prompt-status` ficava "aberto" porque o Cursor faz commit/push e só depois gravava o fim; o correto é registrar só o início e calcular o Tempo com `now() - current_prompt_start_time`. Corrigir isso nas regras. (2) Confirmar se a conclusão da análise era: partes de `spec-root.md` não implementadas, mas o Cursor no PC agiu como se tivesse implementado tudo.
+
+**Ação/Resposta:**
+1. Confirmado com nuance: arquitetura Rust+wrappers, sticky e TUI MVP existem; **fuzzy finding** e **wildcards nativos** (escopo explícito de `spec-root.md`) não estão no código. O agente anterior descreveu o produto como completo.
+2. Regras alteradas: `.prompt-status` só no início; proibido gravar fim/`end_time`/status final; rodapé usa `now() - start`. `[last]` é preenchido no início do prompt seguinte.
+3. Arquivos: `.cursorrules`, `rules.md`, `flow.md`, `spec-root.md`, `spec-project-bootstrap.md`, `spec-template.md`, `setup.md`, `status.md`, `timeline.md`, `.prompt-status`.
+4. Este prompt **não** grava fim no `.prompt-status`.

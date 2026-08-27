@@ -2,29 +2,31 @@
 
 ## Pré-requisitos
 
-- Conta GitHub (para criar o repo a partir do template)
 - Git
 - Cursor IDE
+- Rust / Cargo para desenvolvimento e geração de pacotes
 - Ferramentas de domínio conforme `tools-linux.md` ou `tools-windows.md`
 
 ## Instalação
 
-1. No GitHub, use **Use this template** (ou selecione este template em **Start with a template**).
-2. Clone o repositório gerado:
+Usuário final: siga [`docs/HOW_TO_INSTALL.md`](docs/HOW_TO_INSTALL.md) e prefira o pacote pré-compilado da plataforma.
+
+Desenvolvimento Linux:
 
 ```bash
-git clone <URL_DO_NOVO_REPO>
-cd <NOME_DO_REPO>
+bash scripts/setup/install.sh --quiet
 ```
 
-3. Abra a pasta no Cursor.
+Desenvolvimento Windows:
 
-## Bootstrap
+```powershell
+.\scripts\setup\install.ps1 -Quiet
+```
 
-1. Leia `readme.md`, `spec-root.md`, `rules.md` e `flow.md`.
-2. Substitua placeholders (`[NOME DO PROJETO]`, `[PROPÓSITO]`, etc.).
-3. Confirme que `.prompt-status` existe na raiz.
-4. Valide a estrutura:
+## Desenvolvimento
+
+1. Leia `readme.md`, `spec-root.md`, `rules.md`, `flow.md` e `docs/HOW_IT_WORKS.md`.
+2. Valide a estrutura:
 
 ```bash
 # Linux / macOS
@@ -34,7 +36,17 @@ cd <NOME_DO_REPO>
 .\scripts\validation\validate-structure.ps1
 ```
 
-5. Coloque o conteúdo específico do projeto em `/core`.
+3. Valide o core:
+
+```bash
+cd core
+cargo fmt --check
+cargo check
+cargo test
+cargo clippy --all-targets -- -D warnings
+```
+
+4. Gere pacotes com `scripts/setup/build-dist.sh` (Linux) ou `build-dist.ps1` (Windows).
 
 ## Variáveis de ambiente
 
@@ -54,7 +66,7 @@ cd <NOME_DO_REPO>
 
 1. Crie a primeira spec em `specs/to-do/` usando `spec-template.md`.
 2. Peça ao Cursor para seguir `flow.md` e implementar somente o escopo da spec.
-3. Ao final, confira atualizações em `.prompt-status`, `status.md` e `timeline.md`.
+3. O Tempo de cada resposta do agente aparece no rodapé do chat (`now() - current_prompt_start_time`); `.prompt-status` guarda só o início. Confira também `status.md` e `timeline.md`.
 
 ## Solução de problemas
 
