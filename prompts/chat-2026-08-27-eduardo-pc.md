@@ -116,3 +116,28 @@
 2. Identificado que a engine padrão das Actions do GitHub encerrou suporte ao Node 20, exigindo que as actions passassem para suas versões mais atuais baseadas no Node 24.
 3. Atualizado o `.github/workflows/release.yml` modificando as versions das dependências oficiais da Action: `actions/checkout@v4` → `@v7`, `actions/upload-artifact@v4` → `@v7`, `actions/download-artifact@v4` → `@v8`, e `softprops/action-gh-release@v2` → `@v3`.
 4. Feito commit (`fix: bump github action versions to resolve node 20 deprecation warnings`) e push.
+
+## Prompt #41
+**Contexto/Pergunta:** O usuário solicitou a criação da flag `-c[i|r]:[on|off]` para controle da sensibilidade de caixa (*Case Sensitivity*) nas buscas de diretório. `-ci` seria *ignore case* (padrão Windows) e `-cr` seria *respect case* (padrão Linux). A configuração precisaria ser injetada no motor de busca (`pattern.rs` / `search.rs`), na TUI (`tui.rs`), no arquivo de ajuda (`help.rs`) e gravada persistentemente via sistema *sticky* (`config.rs`).
+
+**Ação/Resposta:**
+1. **Configuração Persistente:** Modificado o struct `Config` em `config.rs` para suportar o campo enumerado `CaseSensitivity::Insensitive` e `Sensitive`. Foi inserida uma trava (`cfg(target_os)`) que define o default dinamicamente dependendo de onde é rodado (Insensitive no Windows, Sensitive no restante).
+2. **Parser de Argumentos:** Modificado o parser do `args.rs` injetando `-ci` e `-cr` no loop de leitura, com comportamento idêntico de flags `sticky` que as ordens `qa`, `qs`, possuindo a possibilidade de ser cravado com `:on` / `:off`.
+3. **Regex e Matching Literar:** O parser `QueryPattern::compile` do Rust foi refatorado para parar de dar `.to_lowercase()` globalmente por padrão. Ele passou a respeitar a configuração `CaseSensitivity` e construir a Regex com flag de _case insensitive_ ativada ou não de acordo com a variável enviada pelo `AppArgs`. O fallback literal também foi condicionado na cláusula de _match_ se fará verificação raw ou lower.
+4. **TUI (Interface de Prompt):** `select_directory` e `literal_score` modificados para não aplicar minúsculas forçadas no caso de a `CaseSensitivity` selecionada ser `Sensitive`.
+5. **Testes Unitários:** Todos os testes das suítes de `tui`, `args`, `pattern` e `config` refeitos contemplando as modificações (e.g. `literal_matching_can_be_case_sensitive`), somando-se 2 novos testes. O build e `cargo test` completaram 23/23 casos de sucesso em testes.
+6. **Logs:** O texto de `--help` foi traduzido e o commit e push da nova Feature efetuados (`feat: add case sensitivity command-line options`).
+
+## Prompt #42
+**Contexto/Pergunta:** O usuário percebeu que executou por engano um arquivo `install.cmd` global (pertencente ao NVM - Node Version Manager) que estava acessível pelo `PATH` do Windows, ao invés do script local do repositório, o que explicou a mensagem pedindo caminhos do NodeJS.
+
+**Ação/Resposta:**
+1. A IA confirmou a descoberta e explicou que isso é um comportamento padrão do Windows CMD, onde comandos no PATH global podem se sobrepor a arquivos locais se não houver especificação de caminho.
+2. Orientou o usuário a invocar o script usando caminhos relativos (ex: `.\scripts\setup\install.cmd`) para garantir a execução do arquivo correto dentro do projeto.
+
+## Prompt #43
+**Contexto/Pergunta:** O usuário solicitou que fosse feito o build da versão release, criado os arquivos compactados e uma nova release no Github para a nova feature inserida (sensibilidade de caixa).
+
+**Ação/Resposta:**
+1. Em vez de rodar os scripts de build locais (os quais já sabíamos que estavam envelopados na Action do Github), optei diretamente pela abordagem mais automatizada via pipeline CI.
+2. Invoquei `git tag v0.1.1` e `git push origin v0.1.1`. O servidor do GitHub se encarregou da infraestrutura toda (ligando os workers de Linux e Windows simultaneamente, compilando, executando os scripts de gerar zip/tar.gz, e publicando na página de Releases os novos artefatos finalizados).

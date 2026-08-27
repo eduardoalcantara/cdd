@@ -1,4 +1,5 @@
 pub const HELP: &str = r#"cdd — Change Directory Directly
+2026 (c) Eduardo Alcantara
 
 USAGE:
     cdd <query> [queries...] [options]
