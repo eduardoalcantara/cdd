@@ -52,7 +52,7 @@ impl Default for Config {
 impl Config {
     pub fn config_path() -> PathBuf {
         let mut path = dirs::config_dir().unwrap_or_else(|| {
-            dirs::home_dir().expect("Não foi possível encontrar a pasta Home do usuário.")
+            dirs::home_dir().expect("Could not find user's Home directory.")
         });
         path.push("cdd");
         path.push("cdd.json");

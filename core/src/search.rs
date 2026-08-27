@@ -210,7 +210,8 @@ mod tests {
         let results = find_directories_from(temp.path(), &app_args.queries, &app_args).unwrap();
 
         assert_eq!(results.len(), 1);
-        assert!(results[0].ends_with("projects/application1"));
+        let expected = std::path::PathBuf::from("projects").join("application1");
+        assert!(results[0].ends_with(expected.to_str().unwrap()));
     }
 
     #[test]
@@ -246,7 +247,8 @@ mod tests {
         let results = find_directories_from(temp.path(), &app_args.queries, &app_args).unwrap();
 
         assert_eq!(results.len(), 1);
-        assert!(results[0].ends_with("Workspace/MyProject"));
+        let expected = std::path::PathBuf::from("Workspace").join("MyProject");
+        assert!(results[0].ends_with(expected.to_str().unwrap()));
     }
 
     #[cfg(not(target_os = "windows"))]

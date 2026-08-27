@@ -23,7 +23,7 @@ impl QueryPattern {
             let regex = RegexBuilder::new(&expression)
                 .case_insensitive(true)
                 .build()
-                .map_err(|error| format!("curinga inválido {raw:?}: {error}"))?;
+                .map_err(|error| format!("invalid wildcard {raw:?}: {error}"))?;
             Ok(Self::Wildcard(regex))
         } else {
             Ok(Self::Literal(raw.to_lowercase()))

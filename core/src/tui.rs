@@ -25,7 +25,7 @@ pub fn select_directory(matches: Vec<String>, list_size: usize) -> Option<String
         literal_score(input, option, index, &searchable_paths)
     };
 
-    Select::new("Selecione o diretório alvo:", options)
+    Select::new("Select target directory:", options)
         .with_page_size(list_size)
         .with_render_config(render_config)
         .with_scorer(&scorer)
@@ -47,7 +47,7 @@ impl Display for SelectEntry {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Directory { path, .. } => path.fmt(formatter),
-            Self::NoResults => "Nenhum caminho encontrado com o filtro.".fmt(formatter),
+            Self::NoResults => "No path found matching the filter.".fmt(formatter),
         }
     }
 }

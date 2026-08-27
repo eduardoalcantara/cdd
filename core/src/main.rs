@@ -11,7 +11,7 @@ fn main() {
         Ok(args) => args,
         Err(error) => {
             eprintln!("cdd: {error}");
-            eprintln!("Use 'cdd --help' para ver as opções disponíveis.");
+            eprintln!("Use 'cdd --help' to see available options.");
             std::process::exit(2);
         }
     };
@@ -22,16 +22,16 @@ fn main() {
     }
 
     if app_args.config_changed {
-        eprintln!("(filtros atualizados na configuração)");
+        eprintln!("(filters updated in configuration)");
     }
 
     if !app_args.active_filters.is_empty() {
-        eprintln!("(filtros ativos: {})", app_args.active_filters.join(", "));
+        eprintln!("(active filters: {})", app_args.active_filters.join(", "));
     }
 
     if app_args.queries.is_empty() {
-        eprintln!("cdd: uso: cdd <termo> [termos...] [opções]");
-        eprintln!("Use 'cdd --help' para ver exemplos.");
+        eprintln!("cdd: usage: cdd <query> [queries...] [options]");
+        eprintln!("Use 'cdd --help' to see examples.");
         std::process::exit(2);
     }
 
@@ -44,7 +44,7 @@ fn main() {
     };
 
     if results.is_empty() {
-        eprintln!("cdd: nenhum diretório encontrado");
+        eprintln!("cdd: no directory found");
         std::process::exit(1);
     } else {
         let selected = if results.len() == 1 || app_args.lucky_pick {
@@ -57,7 +57,7 @@ fn main() {
 
         if let Some(out_path) = app_args.out_file {
             if let Err(error) = std::fs::write(out_path, &selected) {
-                eprintln!("cdd: não foi possível escrever o resultado: {error}");
+                eprintln!("cdd: could not write result: {error}");
                 std::process::exit(1);
             }
         } else {

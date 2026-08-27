@@ -21,7 +21,7 @@ pub fn parse_args(config: Config) -> Result<AppArgs, String> {
     if app_args.config_changed {
         config
             .save()
-            .map_err(|error| format!("não foi possível salvar a configuração: {error}"))?;
+            .map_err(|error| format!("could not save configuration: {error}"))?;
     }
 
     Ok(app_args)
@@ -74,7 +74,7 @@ where
         if !options_ended && arg == "--cdd-out-file" {
             let path = args
                 .get(i + 1)
-                .ok_or_else(|| "a opção interna --cdd-out-file exige um caminho".to_string())?;
+                .ok_or_else(|| "internal option --cdd-out-file requires a path".to_string())?;
             out_file = Some(path.clone());
             skip_next = true;
             continue;
@@ -153,10 +153,10 @@ where
                     {
                         let size = raw_size
                             .parse::<u32>()
-                            .map_err(|_| format!("tamanho de lista inválido: {core_arg}"))?;
+                            .map_err(|_| format!("invalid list size: {core_arg}"))?;
                         if !(2..=20).contains(&size) {
                             return Err(format!(
-                                "tamanho de lista fora da faixa -2 até -20: {core_arg}"
+                                "list size out of range -2 to -20: {core_arg}"
                             ));
                         }
 
@@ -177,7 +177,7 @@ where
                             None => list_size = size,
                         }
                     } else {
-                        return Err(format!("opção desconhecida: {arg}"));
+                        return Err(format!("unknown option: {arg}"));
                     }
                 }
             }
@@ -333,7 +333,7 @@ mod tests {
     fn unknown_option_is_an_error() {
         assert_eq!(
             parse(&["query", "-xyz"]).unwrap_err(),
-            "opção desconhecida: -xyz"
+            "unknown option: -xyz"
         );
     }
 

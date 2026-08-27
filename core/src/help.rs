@@ -1,41 +1,41 @@
 pub const HELP: &str = r#"cdd — Change Directory Directly
 
-USO:
-    cdd <termo> [termos...] [opções]
+USAGE:
+    cdd <query> [queries...] [options]
     cdd -h | --help
 
-BUSCA:
-    Termos comuns fazem correspondência parcial, sem autocorreção.
-    * corresponde a zero ou mais caracteres no nome de um diretório.
-    ? corresponde a exatamente um caractere no nome de um diretório.
-    O termo final identifica o próprio diretório de destino; seus descendentes
-    não são incluídos apenas por herdarem o match no caminho.
+SEARCH:
+    Queries perform partial matching, without autocorrection.
+    * matches zero or more characters in a directory name.
+    ? matches exactly one character in a directory name.
+    The final query identifies the target directory itself; its descendants
+    are not included just because they inherit the path match.
 
-    No Bash/Zsh, coloque curingas entre aspas para impedir que o shell
-    os expanda antes do cdd: cdd 'proj*' 'app?'
+    In Bash/Zsh, quote wildcards to prevent the shell
+    from expanding them before cdd: cdd 'proj*' 'app?'
 
-OPÇÕES:
-    -h, --help       Mostra esta ajuda
-    -l, -1           Seleciona o primeiro resultado, sem abrir o menu
-    -2 ... -20       Define as linhas visíveis da lista (padrão: -10)
-    -oa              Ordem alfabética ascendente
-    -od              Ordem alfabética descendente
-    -of              Ordem encontrada na varredura (padrão)
-    -qs              Termos na ordem informada (padrão)
-    -qi              Termos na ordem inversa
-    -qa              Termos em qualquer ordem
-    --               Encerra as opções; permite termos iniciados por hífen
+OPTIONS:
+    -h, --help       Show this help
+    -l, -1           Select the first result without opening the menu
+    -2 ... -20       Set the number of visible lines in the list (default: -10)
+    -oa              Ascending alphabetical order
+    -od              Descending alphabetical order
+    -of              Order found during scan (default)
+    -qs              Queries in sequential order (default)
+    -qi              Queries in inverse order
+    -qa              Queries in any order
+    --               End options; allows queries starting with a hyphen
 
-CONFIGURAÇÃO PERSISTENTE:
-    Acrescente :on para persistir uma opção e :off para removê-la.
-    Exemplos: -l:on, -l:off, -15:on, -oa:on, -qa:off
-    Arquivo: diretório de configuração do sistema/cdd/cdd.json
+PERSISTENT CONFIGURATION:
+    Append :on to persist an option and :off to remove it.
+    Examples: -l:on, -l:off, -15:on, -oa:on, -qa:off
+    File: system config directory/cdd/cdd.json
 
-EXEMPLOS:
+EXAMPLES:
     cdd www app
     cdd 'proj*' 'app?'
     cdd docs -qa -oa
     cdd cache -l
 
-O comando deve ser carregado pelo wrapper Bash/Zsh ou PowerShell para que
-o diretório do terminal atual seja alterado."#;
+The command must be sourced by the Bash/Zsh or PowerShell wrapper so that
+the current terminal directory is changed."#;
