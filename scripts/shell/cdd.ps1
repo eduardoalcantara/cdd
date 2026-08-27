@@ -6,11 +6,11 @@ $global:CddScriptPath = if ($MyInvocation.MyCommand.Path) { $MyInvocation.MyComm
 $global:CddScriptDir = Split-Path -Parent $global:CddScriptPath
 
 function cdd {
-    $DebugBin = Join-Path $global:CddScriptDir "..\..\core\target\debug\cdd.exe"
-    $ReleaseBin = Join-Path $global:CddScriptDir "..\..\core\target\release\cdd.exe"
-    $SameDirBin = Join-Path $global:CddScriptDir "cdd.exe"
+    $DebugBin = Join-Path $global:CddScriptDir "..\..\core\target\debug\cdd-bin.exe"
+    $ReleaseBin = Join-Path $global:CddScriptDir "..\..\core\target\release\cdd-bin.exe"
+    $SameDirBin = Join-Path $global:CddScriptDir "cdd-bin.exe"
     
-    $CddBin = "cdd.exe"
+    $CddBin = "cdd-bin.exe"
     
     if (Test-Path $SameDirBin) {
         $CddBin = $SameDirBin

@@ -58,16 +58,40 @@ if ($Uninstall) {
         Set-Content -Path $ProfilePath -Value $newContent
         Write-Host "Uninstallation complete. Files and profile injection were removed." -ForegroundColor Green
     }
+    
+    $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if ($UserPath) {
+        $Paths = $UserPath -split ";" | Where-Object { $_ -ne "" -and $_ -ne $Dest }
+        $NewPath = $Paths -join ";"
+        [Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
+        Write-Host "Removed $Dest from User PATH." -ForegroundColor Green
+    }
+
     exit 0
 }
 
 Write-Host "Copying binary files to $Dest..." -ForegroundColor Yellow
 if (!(Test-Path $Dest)) { New-Item -ItemType Directory -Force -Path $Dest | Out-Null }
-Copy-Item (Join-Path $ScriptDir "cdd.exe") -Destination $Dest -Force
+Copy-Item (Join-Path $ScriptDir "cdd-bin.exe") -Destination $Dest -Force
 Copy-Item (Join-Path $ScriptDir "cdd.ps1") -Destination $Dest -Force
+Copy-Item (Join-Path $ScriptDir "cdd.cmd") -Destination $Dest -Force
 
 # Unblock the wrapper script to prevent execution policy errors for RemoteSigned
 Unblock-File -Path (Join-Path $Dest "cdd.ps1") -ErrorAction SilentlyContinue
+
+Write-Host "Updating User PATH for CMD support..." -ForegroundColor Yellow
+$UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($UserPath -notmatch [regex]::Escape($Dest)) {
+    if ($UserPath.EndsWith(";")) {
+        $NewPath = $UserPath + $Dest
+    } else {
+        $NewPath = $UserPath + ";" + $Dest
+    }
+    [Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
+    Write-Host "OK: Added $Dest to User PATH." -ForegroundColor Green
+} else {
+    Write-Host "SKIP: $Dest is already in User PATH." -ForegroundColor DarkGray
+}
 
 Write-Host "Updating profile file ($ProfilePath)..." -ForegroundColor Yellow
 if (!(Test-Path $ProfilePath)) {

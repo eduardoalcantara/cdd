@@ -31,8 +31,9 @@ if (Test-Path $PkgDir) { Remove-Item -Recurse -Force $PkgDir }
 New-Item -ItemType Directory -Force -Path $PkgDir | Out-Null
 
 # Copiando artefatos
-Copy-Item (Join-Path $RepoRoot "core\target\release\cdd.exe") -Destination $PkgDir -Force
+Copy-Item (Join-Path $RepoRoot "core\target\release\cdd-bin.exe") -Destination $PkgDir -Force
 Copy-Item (Join-Path $RepoRoot "scripts\shell\cdd.ps1") -Destination $PkgDir -Force
+Copy-Item (Join-Path $RepoRoot "scripts\shell\cdd.cmd") -Destination $PkgDir -Force
 Copy-Item (Join-Path $RepoRoot "scripts\setup\install-user.ps1") -Destination (Join-Path $PkgDir "install.ps1") -Force
 Copy-Item (Join-Path $RepoRoot "scripts\setup\install-user.cmd") -Destination (Join-Path $PkgDir "install.cmd") -Force
 Copy-Item (Join-Path $RepoRoot "readme.md") -Destination (Join-Path $PkgDir "README.md") -Force
@@ -46,10 +47,15 @@ if (Test-Path $ZipPath) { Remove-Item -Force $ZipPath }
 if (Test-Path $ChecksumPath) { Remove-Item -Force $ChecksumPath }
 
 Write-Host "Compressing package cdd-windows-x86_64.zip..." -ForegroundColor Yellow
-Compress-Archive -Path (Join-Path $PkgDir "*") -DestinationPath $ZipPath
+Compress-Archive -Path (Join-Path $PkgDir "*") -DestinationPath $ZipPath -Force
 $Hash = (Get-FileHash -Algorithm SHA256 -Path $ZipPath).Hash.ToLower()
 "$Hash  $(Split-Path -Leaf $ZipPath)" | Set-Content -Encoding ascii -Path $ChecksumPath
-Remove-Item -Recurse -Force $PkgDir
+
+# Tentativa de remover o diretorio garantindo que recursos sejam liberados
+[System.GC]::Collect()
+[System.GC]::WaitForPendingFinalizers()
+Start-Sleep -Milliseconds 500
+Remove-Item -Recurse -Force $PkgDir -ErrorAction SilentlyContinue
 
 Write-Host "Build complete! Package generated at: $ZipPath" -ForegroundColor Green
 Write-Host "Checksum generated at: $ChecksumPath" -ForegroundColor Green

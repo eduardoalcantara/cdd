@@ -9,11 +9,11 @@ function cdd() {
     # For this repository, we can try to find it relative to this script
     local CDD_SCRIPT_DIR
     CDD_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local CDD_BIN_SAME_DIR="$CDD_SCRIPT_DIR/cdd"
-    local CDD_BIN_DEBUG="$CDD_SCRIPT_DIR/../../core/target/debug/cdd"
-    local CDD_BIN_RELEASE="$CDD_SCRIPT_DIR/../../core/target/release/cdd"
+    local CDD_BIN_SAME_DIR="$CDD_SCRIPT_DIR/cdd-bin"
+    local CDD_BIN_DEBUG="$CDD_SCRIPT_DIR/../../core/target/debug/cdd-bin"
+    local CDD_BIN_RELEASE="$CDD_SCRIPT_DIR/../../core/target/release/cdd-bin"
     
-    local CDD_BIN="cdd"
+    local CDD_BIN="cdd-bin"
     
     if [ -f "$CDD_BIN_SAME_DIR" ]; then
         CDD_BIN="$CDD_BIN_SAME_DIR"

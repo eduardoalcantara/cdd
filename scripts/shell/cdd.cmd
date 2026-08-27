@@ -7,12 +7,12 @@
 set "CDD_DIR=%~dp0"
 set "CDD_BIN="
 
-if exist "%CDD_DIR%cdd.exe" (
-    set "CDD_BIN=%CDD_DIR%cdd.exe"
-) else if exist "%CDD_DIR%..\..\core\target\release\cdd.exe" (
-    set "CDD_BIN=%CDD_DIR%..\..\core\target\release\cdd.exe"
-) else if exist "%CDD_DIR%..\..\core\target\debug\cdd.exe" (
-    set "CDD_BIN=%CDD_DIR%..\..\core\target\debug\cdd.exe"
+if exist "%CDD_DIR%cdd-bin.exe" (
+    set "CDD_BIN=%CDD_DIR%cdd-bin.exe"
+) else if exist "%CDD_DIR%..\..\core\target\release\cdd-bin.exe" (
+    set "CDD_BIN=%CDD_DIR%..\..\core\target\release\cdd-bin.exe"
+) else if exist "%CDD_DIR%..\..\core\target\debug\cdd-bin.exe" (
+    set "CDD_BIN=%CDD_DIR%..\..\core\target\debug\cdd-bin.exe"
 ) else (
     echo cdd: command not found. Ensure the Rust binary is compiled.
     exit /b 1

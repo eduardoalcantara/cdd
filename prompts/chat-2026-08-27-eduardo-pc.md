@@ -78,3 +78,16 @@
 1. Esclarecida a natureza de execução do `cmd.exe`: diferentemente do PowerShell, um arquivo Batch (`.cmd` ou `.bat`) não precisa de "injeção de profile", pois ele é executado de forma "in-process" e possui a capacidade de alterar o diretório da própria janela que o chamou, bastando que seu diretório esteja acessível globalmente pelo Windows `%PATH%`.
 2. Foi criado e estruturado o arquivo `scripts/shell/cdd.cmd`, um wrapper contendo a lógica de ler a saída temporal do binário Rust (`for /f`) e aplicar o comando `cd /d` diretamente na sessão do CMD.
 3. A IA explicou como isso funciona e abordou um desafio técnico existente com a adição global no PATH quando os arquivos `.exe` e `.cmd` residem na mesma pasta: o Windows sempre prioriza arquivos executáveis (`.exe`) sobre batch (`.cmd`), o que anularia a interceptação. A estratégia a ser decidida seria discutida com o usuário a seguir.
+
+## Prompt #37
+**Contexto/Pergunta:** O usuário tomou a decisão: "1. Podemos renomear o exe para cdd-bin.exe", "2. Pode fazer as melhorias e depois reempacotar o install em zip - agora teremos compatibilidade com PS e CMD e BASH" e "3. Faça Commit e PUSH".
+
+**Ação/Resposta:**
+1. **Renomeação Estrutural:** O arquivo `core/Cargo.toml` foi alterado para nomear explicitamente o binário de saída como `cdd-bin` (adicionando `[[bin]] name="cdd-bin"`).
+2. **Atualização Global de Referências:** Todos os 3 wrappers (`cdd.sh`, `cdd.ps1`, `cdd.cmd`) foram alterados para acionar `cdd-bin` / `cdd-bin.exe` em vez do antigo `cdd`.
+3. **Instaladores End-User Modificados:** 
+   - No `install-user.ps1`: Adicionado o wrapper `cdd.cmd` para cópia. Implementada a lógica inteligente de injetar o `%LOCALAPPDATA%\cdd` na variável de ambiente de usuário `Path`, e remover com segurança durante `--uninstall`.
+   - No `install-user.sh`: Alterada a referência da cópia para `cdd-bin`.
+4. **Scripts de Build Modificados:** `build-dist.ps1` e `build-dist.sh` foram ajustados para capturar o `cdd-bin` e incluir o novo wrapper `cdd.cmd` dentro do pacote `.zip`. Adicionada lógica de "Garbage Collection" com `Start-Sleep` no PowerShell para contornar travamentos esporádicos do `Remove-Item` causados pelo lock do antivírus/compressor.
+5. **Testes e Build:** Realizada validação que gerou com sucesso o pacote final `dist/cdd-windows-x86_64.zip`.
+6. **Commits:** Realizado o commit das mudanças (`feat: rename binary to cdd-bin and fully support cross-platform CMD, PS and Bash`) e feito push para o repositório.

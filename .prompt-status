@@ -11,14 +11,14 @@ current_prompt_number = 36
 current_prompt_start_time = 2026-08-27T13:48:00-03:00
 current_prompt_status = running
 current_prompt_llm = Gemini 3.1 Pro
-current_prompt_summary = Explicar execução no CMD e criar cdd.cmd
+current_prompt_summary = Renomear executável para cdd-bin e adicionar ao PATH para suporte CMD
 
 [last]
-current_prompt_number = 35
-current_prompt_start_time = 2026-08-27T13:44:00-03:00
-current_prompt_status = success
-current_prompt_llm = Gemini 3.1 Pro
-current_prompt_summary = Explicar viabilidade e limitações de colocar o cdd no PATH e o funcionamento dos instaladores
+last_prompt_number = 35
+last_prompt_start_time = 2026-08-27T13:44:00-03:00
+last_prompt_duration_seconds = 84
+last_prompt_llm = Gemini 3.1 Pro
+last_prompt_summary = Explicar viabilidade e limitações de colocar o cdd no PATH e o funcionamento dos instaladores
 
 [totals]
 total_prompts_tracked = 36

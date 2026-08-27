@@ -62,8 +62,8 @@ do_uninstall() {
 do_install() {
     echo "Copying binary and wrapper to $DEST..."
     mkdir -p "$DEST"
-    cp "$DIR/cdd" "$DIR/cdd.sh" "$DEST/"
-    chmod +x "$DEST/cdd" "$DEST/cdd.sh"
+    cp "$DIR/cdd-bin" "$DIR/cdd.sh" "$DEST/"
+    chmod +x "$DEST/cdd-bin" "$DEST/cdd.sh"
 
     # Injetando no bashrc
     if [ -f "$BASHRC_FILE" ]; then
