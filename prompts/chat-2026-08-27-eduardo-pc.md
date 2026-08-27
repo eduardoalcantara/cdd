@@ -91,3 +91,11 @@
 4. **Scripts de Build Modificados:** `build-dist.ps1` e `build-dist.sh` foram ajustados para capturar o `cdd-bin` e incluir o novo wrapper `cdd.cmd` dentro do pacote `.zip`. Adicionada lógica de "Garbage Collection" com `Start-Sleep` no PowerShell para contornar travamentos esporádicos do `Remove-Item` causados pelo lock do antivírus/compressor.
 5. **Testes e Build:** Realizada validação que gerou com sucesso o pacote final `dist/cdd-windows-x86_64.zip`.
 6. **Commits:** Realizado o commit das mudanças (`feat: rename binary to cdd-bin and fully support cross-platform CMD, PS and Bash`) e feito push para o repositório.
+
+## Prompt #38
+**Contexto/Pergunta:** O usuário perguntou como criar um release no GitHub e se o token da máquina atual permitiria enviar os pacotes `.zip` e `.tar.gz` para lá.
+
+**Ação/Resposta:**
+1. Verificamos a presença do GitHub CLI (`gh`), e constatamos que não está instalado na máquina.
+2. A IA esclareceu que o token de acesso que o Git for Windows está usando serve estritamente para ações do Git (Push/Pull de código e Tags), mas o Git sozinho não faz o upload de "Release Assets" (como o zip/tar.gz). Isso é função exclusiva do GitHub.
+3. A IA ofereceu as orientações detalhadas de como realizar o envio de duas formas: Manualmente pelo site ou automatizado via Actions.
