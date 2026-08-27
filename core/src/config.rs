@@ -2,6 +2,25 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CaseSensitivity {
+    Sensitive,
+    Insensitive,
+}
+
+impl Default for CaseSensitivity {
+    fn default() -> Self {
+        #[cfg(target_os = "windows")]
+        {
+            CaseSensitivity::Insensitive
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            CaseSensitivity::Sensitive
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ListOrder {
     Ascending,
@@ -25,6 +44,7 @@ pub struct StickyState {
     pub list_size: bool,
     pub list_order: bool,
     pub query_order: bool,
+    pub case_sensitivity: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -34,6 +54,7 @@ pub struct Config {
     pub list_size: u32,
     pub list_order: ListOrder,
     pub query_order: QueryOrder,
+    pub case_sensitivity: CaseSensitivity,
     pub sticky: StickyState,
 }
 
@@ -44,6 +65,7 @@ impl Default for Config {
             list_size: 10,
             list_order: ListOrder::default(),
             query_order: QueryOrder::default(),
+            case_sensitivity: CaseSensitivity::default(),
             sticky: StickyState::default(),
         }
     }
@@ -116,6 +138,13 @@ impl Config {
             };
             labels.push(format!("{flag}=on"));
         }
+        if self.sticky.case_sensitivity {
+            let flag = match self.case_sensitivity {
+                CaseSensitivity::Insensitive => "-ci",
+                CaseSensitivity::Sensitive => "-cr",
+            };
+            labels.push(format!("{flag}=on"));
+        }
 
         labels
     }
@@ -125,6 +154,7 @@ impl Config {
         self.sticky.list_size = self.list_size != Config::default().list_size;
         self.sticky.list_order = self.list_order != ListOrder::default();
         self.sticky.query_order = self.query_order != QueryOrder::default();
+        self.sticky.case_sensitivity = self.case_sensitivity != CaseSensitivity::default();
     }
 }
 
@@ -138,7 +168,8 @@ mod tests {
             "lucky_pick": true,
             "list_size": 15,
             "list_order": "Ascending",
-            "query_order": "Any"
+            "query_order": "Any",
+            "case_sensitivity": "Insensitive"
         }"#;
 
         let mut config: Config = serde_json::from_str(json).unwrap();
@@ -146,10 +177,14 @@ mod tests {
 
         assert!(config.lucky_pick);
         assert_eq!(config.list_size, 15);
-        assert_eq!(
-            config.active_filter_labels(),
+        
+        let expected_ci = if CaseSensitivity::default() == CaseSensitivity::Sensitive {
+            vec!["-1=on", "-15=on", "-oa=on", "-qa=on", "-ci=on"]
+        } else {
             vec!["-1=on", "-15=on", "-oa=on", "-qa=on"]
-        );
+        };
+        
+        assert_eq!(config.active_filter_labels(), expected_ci);
     }
 
     #[test]
@@ -158,18 +193,25 @@ mod tests {
             list_size: 10,
             list_order: ListOrder::Find,
             query_order: QueryOrder::Sequential,
+            case_sensitivity: CaseSensitivity::default(),
             sticky: StickyState {
                 list_size: true,
                 list_order: true,
                 query_order: true,
+                case_sensitivity: true,
                 ..StickyState::default()
             },
             ..Config::default()
         };
 
+        let default_case_flag = match CaseSensitivity::default() {
+            CaseSensitivity::Insensitive => "-ci=on",
+            CaseSensitivity::Sensitive => "-cr=on",
+        };
+
         assert_eq!(
             config.active_filter_labels(),
-            vec!["-10=on", "-of=on", "-qs=on"]
+            vec!["-10=on", "-of=on", "-qs=on", default_case_flag]
         );
     }
 }

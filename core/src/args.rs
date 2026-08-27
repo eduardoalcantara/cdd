@@ -1,4 +1,4 @@
-use crate::config::{Config, ListOrder, QueryOrder};
+use crate::config::{CaseSensitivity, Config, ListOrder, QueryOrder};
 use std::env;
 
 #[derive(Debug, Clone)]
@@ -8,6 +8,7 @@ pub struct AppArgs {
     pub list_size: u32,
     pub list_order: ListOrder,
     pub query_order: QueryOrder,
+    pub case_sensitivity: CaseSensitivity,
     pub config_changed: bool,
     pub out_file: Option<String>,
     pub show_help: bool,
@@ -42,6 +43,7 @@ where
             list_size: config.list_size,
             list_order: config.list_order,
             query_order: config.query_order,
+            case_sensitivity: config.case_sensitivity,
             config_changed: false,
             out_file: None,
             show_help: true,
@@ -54,6 +56,7 @@ where
     let mut list_size = config.list_size;
     let mut list_order = config.list_order;
     let mut query_order = config.query_order;
+    let mut case_sensitivity = config.case_sensitivity;
     let mut config_changed = false;
     let mut out_file = None;
     let mut options_ended = false;
@@ -147,6 +150,20 @@ where
                     &mut query_order,
                     &mut config_changed,
                 ),
+                "-ci" => apply_case_sensitivity(
+                    CaseSensitivity::Insensitive,
+                    sticky,
+                    &mut config,
+                    &mut case_sensitivity,
+                    &mut config_changed,
+                ),
+                "-cr" => apply_case_sensitivity(
+                    CaseSensitivity::Sensitive,
+                    sticky,
+                    &mut config,
+                    &mut case_sensitivity,
+                    &mut config_changed,
+                ),
                 _ => {
                     if let Some(raw_size) = core_arg.strip_prefix('-')
                         && raw_size.chars().all(|character| character.is_ascii_digit())
@@ -196,6 +213,7 @@ where
         list_size,
         list_order,
         query_order,
+        case_sensitivity,
         config_changed,
         out_file,
         show_help: false,
@@ -253,6 +271,30 @@ fn apply_query_order(
     }
 }
 
+fn apply_case_sensitivity(
+    requested: CaseSensitivity,
+    sticky: Option<bool>,
+    config: &mut Config,
+    effective: &mut CaseSensitivity,
+    config_changed: &mut bool,
+) {
+    match sticky {
+        Some(true) => {
+            config.case_sensitivity = requested;
+            config.sticky.case_sensitivity = true;
+            *effective = requested;
+            *config_changed = true;
+        }
+        Some(false) => {
+            config.case_sensitivity = CaseSensitivity::default();
+            config.sticky.case_sensitivity = false;
+            *effective = CaseSensitivity::default();
+            *config_changed = true;
+        }
+        None => *effective = requested,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -304,12 +346,13 @@ mod tests {
 
     #[test]
     fn sticky_filters_are_tracked_even_when_the_value_is_default() {
-        let (args, config) = parse(&["query", "-10:on", "-of:on", "-qs:on"]).unwrap();
+        let (args, config) = parse(&["query", "-10:on", "-of:on", "-qs:on", "-ci:on"]).unwrap();
 
         assert!(config.sticky.list_size);
         assert!(config.sticky.list_order);
         assert!(config.sticky.query_order);
-        assert_eq!(args.active_filters, vec!["-10=on", "-of=on", "-qs=on"]);
+        assert!(config.sticky.case_sensitivity);
+        assert_eq!(args.active_filters, vec!["-10=on", "-of=on", "-qs=on", "-ci=on"]);
     }
 
     #[test]

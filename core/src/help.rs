@@ -24,11 +24,13 @@ OPTIONS:
     -qs              Queries in sequential order (default)
     -qi              Queries in inverse order
     -qa              Queries in any order
+    -ci              Case insensitive matching
+    -cr              Respect case matching
     --               End options; allows queries starting with a hyphen
 
 PERSISTENT CONFIGURATION:
     Append :on to persist an option and :off to remove it.
-    Examples: -l:on, -l:off, -15:on, -oa:on, -qa:off
+    Examples: -l:on, -l:off, -15:on, -oa:on, -qa:off, -ci:on
     File: system config directory/cdd/cdd.json
 
 EXAMPLES:

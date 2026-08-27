@@ -1,15 +1,26 @@
+use crate::config::CaseSensitivity;
 use inquire::{
-    Select,
     ui::{Color, RenderConfig, StyleSheet, Styled},
+    Select,
 };
 use std::fmt::{self, Display};
 
-pub fn select_directory(matches: Vec<String>, list_size: usize) -> Option<String> {
-    let searchable_paths: Vec<String> = matches.iter().map(|path| path.to_lowercase()).collect();
+pub fn select_directory(matches: Vec<String>, list_size: usize, case_sensitivity: CaseSensitivity) -> Option<String> {
+    let searchable_paths: Vec<String> = matches
+        .iter()
+        .map(|path| match case_sensitivity {
+            CaseSensitivity::Insensitive => path.to_lowercase(),
+            CaseSensitivity::Sensitive => path.to_string(),
+        })
+        .collect();
+
     let mut options: Vec<SelectEntry> = matches
         .into_iter()
         .map(|path| SelectEntry::Directory {
-            searchable: path.to_lowercase(),
+            searchable: match case_sensitivity {
+                CaseSensitivity::Insensitive => path.to_lowercase(),
+                CaseSensitivity::Sensitive => path.to_string(),
+            },
             path,
         })
         .collect();
@@ -22,7 +33,7 @@ pub fn select_directory(matches: Vec<String>, list_size: usize) -> Option<String
         ));
 
     let scorer = |input: &str, option: &SelectEntry, _display: &str, index: usize| {
-        literal_score(input, option, index, &searchable_paths)
+        literal_score(input, option, index, &searchable_paths, case_sensitivity)
     };
 
     Select::new("Select target directory:", options)
@@ -57,8 +68,12 @@ fn literal_score(
     option: &SelectEntry,
     index: usize,
     searchable_paths: &[String],
+    case_sensitivity: CaseSensitivity,
 ) -> Option<i64> {
-    let filter = input.to_lowercase();
+    let filter = match case_sensitivity {
+        CaseSensitivity::Insensitive => input.to_lowercase(),
+        CaseSensitivity::Sensitive => input.to_string(),
+    };
 
     match option {
         SelectEntry::Directory { searchable, .. } => {
@@ -85,8 +100,23 @@ mod tests {
             searchable: paths[0].to_lowercase(),
         };
 
-        assert!(literal_score("DOCS", &option, 0, &paths).is_some());
-        assert!(literal_score("docss", &option, 0, &paths).is_none());
+        assert!(literal_score("DOCS", &option, 0, &paths, CaseSensitivity::Insensitive).is_some());
+        assert!(literal_score("docss", &option, 0, &paths, CaseSensitivity::Insensitive).is_none());
+    }
+
+    #[test]
+    fn textual_filter_can_be_case_sensitive() {
+        let paths = vec![
+            "/home/user/Docs".to_string(),
+            "/home/user/linux".to_string(),
+        ];
+        let option = SelectEntry::Directory {
+            path: paths[0].clone(),
+            searchable: paths[0].clone(),
+        };
+
+        assert!(literal_score("Docs", &option, 0, &paths, CaseSensitivity::Sensitive).is_some());
+        assert!(literal_score("docs", &option, 0, &paths, CaseSensitivity::Sensitive).is_none());
     }
 
     #[test]
@@ -96,8 +126,8 @@ mod tests {
             "/home/user/linux".to_string(),
         ];
 
-        assert!(literal_score("docss", &SelectEntry::NoResults, 2, &paths).is_some());
-        assert!(literal_score("docs", &SelectEntry::NoResults, 2, &paths).is_none());
-        assert!(literal_score("", &SelectEntry::NoResults, 2, &paths).is_none());
+        assert!(literal_score("docss", &SelectEntry::NoResults, 2, &paths, CaseSensitivity::Insensitive).is_some());
+        assert!(literal_score("docs", &SelectEntry::NoResults, 2, &paths, CaseSensitivity::Insensitive).is_none());
+        assert!(literal_score("", &SelectEntry::NoResults, 2, &paths, CaseSensitivity::Insensitive).is_none());
     }
 }

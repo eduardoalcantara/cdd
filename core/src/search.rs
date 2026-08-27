@@ -45,7 +45,7 @@ fn find_directories_from(
         return Ok(vec![root.to_string_lossy().into_owned()]);
     }
 
-    let patterns = compile_all(queries)?;
+    let patterns = compile_all(queries, args.case_sensitivity)?;
     let mut matches = Vec::new();
     let exclusion_root = root.to_path_buf();
 
@@ -181,6 +181,7 @@ mod tests {
             list_size: 10,
             list_order: ListOrder::Ascending,
             query_order,
+            case_sensitivity: crate::config::CaseSensitivity::Insensitive,
             config_changed: false,
             out_file: None,
             show_help: false,
@@ -191,7 +192,7 @@ mod tests {
     #[test]
     fn sequential_inverse_and_any_respect_directory_components() {
         let components = vec!["var".to_string(), "www".to_string(), "app1".to_string()];
-        let patterns = compile_all(&["www".to_string(), "app".to_string()]).unwrap();
+        let patterns = compile_all(&["www".to_string(), "app".to_string()], crate::config::CaseSensitivity::Insensitive).unwrap();
 
         assert!(path_matches(&components, &patterns, QueryOrder::Sequential));
         assert!(!path_matches(&components, &patterns, QueryOrder::Inverse));

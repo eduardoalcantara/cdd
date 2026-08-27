@@ -49,7 +49,7 @@ fn main() {
     } else {
         let selected = if results.len() == 1 || app_args.lucky_pick {
             results[0].clone()
-        } else if let Some(choice) = tui::select_directory(results, app_args.list_size as usize) {
+        } else if let Some(choice) = tui::select_directory(results, app_args.list_size as usize, app_args.case_sensitivity) {
             choice
         } else {
             std::process::exit(1);
