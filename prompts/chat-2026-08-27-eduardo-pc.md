@@ -63,3 +63,10 @@
 
 **Ação/Resposta:**
 1. Foi registrado que o cancelamento estava perfeitamente correto. O comando rodado anteriormente como teste procurou pela query `core`, a qual encontrou várias ocorrências, invocando automaticamente a Interface Gráfica Interativa no terminal (TUI - Inquire). Como era um processo invisível rodando em segundo plano pela IA, ele ficou aguardando as teclas (setas direcionais) do usuário para sempre até ser cancelado.
+
+## Prompt #35
+**Contexto/Pergunta:** O usuário perguntou se era possível copiar a instalação (arquivos `.ps1` e `.exe`) para uma pasta global dentro do Windows PATH (como `ProgramData` ou `Windows`), assumindo que isso resolveria certos problemas.
+
+**Ação/Resposta:**
+1. A IA elaborou uma resposta detalhando a viabilidade e as razões técnicas que impedem que o simples fato de colocar o executável no PATH contorne o uso do `$PROFILE`.
+2. Informado que o instalador `install-user.ps1` já executa as cópias para `%LOCALAPPDATA%\cdd`, isolando o programa do problema do Google Drive, enquanto o instalador dev (`install.ps1`) não copia intencionalmente para permitir "live tests".
