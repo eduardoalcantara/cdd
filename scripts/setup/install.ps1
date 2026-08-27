@@ -56,6 +56,12 @@ if (!$Quiet) {
 
 $ProfilePath = $PROFILE
 $CddScriptPath = Join-Path $RepoRoot "scripts\shell\cdd.ps1"
+
+# Unblock the wrapper script to prevent execution policy errors for RemoteSigned
+if (Test-Path $CddScriptPath) {
+    Unblock-File -Path $CddScriptPath -ErrorAction SilentlyContinue
+}
+
 $InstallMarker = "# CDD_INSTALL_MARKER"
 $SourceCmd = ". `"$CddScriptPath`""
 

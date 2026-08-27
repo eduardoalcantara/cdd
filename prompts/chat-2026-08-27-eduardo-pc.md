@@ -49,3 +49,11 @@
 **Ação/Resposta:**
 1. **Execução:** O arquivo `.\scripts\setup\install.cmd` foi executado com sucesso. Ele realizou o build limpo em modo release (`cargo build --release`) que demorou cerca de 5 segundos e injetou o wrapper perfeitamente no `$PROFILE` do usuário.
 2. **Log CCIA:** Atualizado o log indicando o procedimento realizado. O status do `.prompt-status` foi deixado intacto após o setup inicial conforme a nova regra imposta.
+
+## Prompt #33
+**Contexto/Pergunta:** O usuário tentou executar `. $PROFILE` e obteve um erro informando que o script `cdd.ps1` não é assinado digitalmente e a política de execução bloqueou sua importação.
+
+**Ação/Resposta:**
+1. **Diagnóstico:** Constatado que arquivos no Google Drive (G:) frequentemente recebem um *Alternate Data Stream* (`Zone.Identifier` / Mark of the Web) que faz com que o Windows (e PowerShell) tratem o arquivo como originário da internet, bloqueando a execução por ser `RemoteSigned` ou exigindo confirmação de assinatura.
+2. **Correção Automática:** Adicionado o comando `Unblock-File -Path $CddScriptPath -ErrorAction SilentlyContinue` dentro dos scripts de instalação (`install.ps1` e `install-user.ps1`) para que o bloqueio seja removido no momento da instalação.
+3. **Desbloqueio Imediato:** Executado o `Unblock-File` remotamente no arquivo `cdd.ps1` da máquina do usuário para corrigir o problema atual sem que ele precise reinstalar a ferramenta. O arquivo foi liberado para execução via `$PROFILE`.

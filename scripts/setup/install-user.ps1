@@ -66,6 +66,9 @@ if (!(Test-Path $Dest)) { New-Item -ItemType Directory -Force -Path $Dest | Out-
 Copy-Item (Join-Path $ScriptDir "cdd.exe") -Destination $Dest -Force
 Copy-Item (Join-Path $ScriptDir "cdd.ps1") -Destination $Dest -Force
 
+# Unblock the wrapper script to prevent execution policy errors for RemoteSigned
+Unblock-File -Path (Join-Path $Dest "cdd.ps1") -ErrorAction SilentlyContinue
+
 Write-Host "Updating profile file ($ProfilePath)..." -ForegroundColor Yellow
 if (!(Test-Path $ProfilePath)) {
     $ProfileDir = Split-Path -Parent $ProfilePath
