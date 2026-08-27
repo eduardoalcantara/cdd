@@ -22,14 +22,14 @@ function cdd() {
     elif [ -f "$CDD_BIN_DEBUG" ]; then
         CDD_BIN="$CDD_BIN_DEBUG"
     elif ! command -v "$CDD_BIN" >/dev/null 2>&1; then
-        echo "cdd: comando não encontrado. Certifique-se de que o binário Rust foi compilado."
+        echo "cdd: command not found. Ensure the Rust binary is compiled."
         return 1
     fi
 
     # Create a temporary file to store the result
     local TMP_FILE
     if ! TMP_FILE=$(mktemp -t cdd_result.XXXXXX); then
-        echo "cdd: não foi possível criar o arquivo temporário." >&2
+        echo "cdd: could not create temporary file." >&2
         return 1
     fi
 

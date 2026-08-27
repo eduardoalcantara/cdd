@@ -20,7 +20,7 @@ function cdd {
         $CddBin = $DebugBin
     } else {
         if (!(Get-Command $CddBin -ErrorAction SilentlyContinue)) {
-            Write-Host "cdd: comando não encontrado. Certifique-se de que o binário Rust foi compilado." -ForegroundColor Red
+            Write-Host "cdd: command not found. Ensure the Rust binary is compiled." -ForegroundColor Red
             $global:LASTEXITCODE = 127
             return
         }

@@ -23,11 +23,11 @@ if (!$Quiet) {
     $ruleBot = $bl + ($h * $leftW) + $h + ($h * $rightW) + $br
     
     Write-Host $ruleTop -ForegroundColor Cyan
-    Write-Host "$v Projeto          $v cdd (Change Directory Directly)                        $v" -ForegroundColor Cyan
+    Write-Host "$v Project          $v cdd (Change Directory Directly)                        $v" -ForegroundColor Cyan
     if ($Uninstall) {
-        Write-Host "$v Acao             $v Desinstalacao do End-User Package                      $v" -ForegroundColor Cyan
+        Write-Host "$v Action           $v End-User Package Uninstallation                        $v" -ForegroundColor Cyan
     } else {
-        Write-Host "$v Acao             $v Instalacao do Binario Autonomo                         $v" -ForegroundColor Cyan
+        Write-Host "$v Action           $v Standalone Binary Installation                         $v" -ForegroundColor Cyan
     }
     Write-Host $ruleBot -ForegroundColor Cyan
     Write-Host ""
@@ -42,10 +42,10 @@ $SourceCmd = ". `"$Dest\cdd.ps1`""
 
 if ($Uninstall) {
     if (!$Quiet -and !$Force) {
-        Write-Host "Aviso: Isso ira apagar os arquivos em $Dest e remover a entrada do seu perfil."
-        $ans = Read-Host "Continuar? (1 = Sim / 0 = Nao) [1]"
+        Write-Host "Warning: This will delete files in $Dest and remove the entry from your profile."
+        $ans = Read-Host "Continue? (1 = Yes / 0 = No) [1]"
         if ($ans -eq "" -or $ans -eq "1") { } else {
-            Write-Host "Abortado."
+            Write-Host "Aborted."
             exit 0
         }
     }
@@ -56,17 +56,17 @@ if ($Uninstall) {
         $content = Get-Content $ProfilePath
         $newContent = $content | Where-Object { $_ -notmatch $InstallMarker -and $_ -notmatch "\.cdd\\cdd\.ps1" }
         Set-Content -Path $ProfilePath -Value $newContent
-        Write-Host "Desinstalacao concluida. Os arquivos e a injecao de perfil foram removidos." -ForegroundColor Green
+        Write-Host "Uninstallation complete. Files and profile injection were removed." -ForegroundColor Green
     }
     exit 0
 }
 
-Write-Host "Copiando arquivos binarios para $Dest..." -ForegroundColor Yellow
+Write-Host "Copying binary files to $Dest..." -ForegroundColor Yellow
 if (!(Test-Path $Dest)) { New-Item -ItemType Directory -Force -Path $Dest | Out-Null }
 Copy-Item (Join-Path $ScriptDir "cdd.exe") -Destination $Dest -Force
 Copy-Item (Join-Path $ScriptDir "cdd.ps1") -Destination $Dest -Force
 
-Write-Host "Atualizando arquivo de perfil ($ProfilePath)..." -ForegroundColor Yellow
+Write-Host "Updating profile file ($ProfilePath)..." -ForegroundColor Yellow
 if (!(Test-Path $ProfilePath)) {
     $ProfileDir = Split-Path -Parent $ProfilePath
     if (!(Test-Path $ProfileDir)) { New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null }
@@ -77,13 +77,13 @@ $content = Get-Content $ProfilePath
 $alreadyInstalled = $content | Where-Object { $_ -match $InstallMarker }
 
 if ($alreadyInstalled) {
-    Write-Host "SKIP: O wrapper do cdd ja esta instalado no \$PROFILE." -ForegroundColor DarkGray
+    Write-Host "SKIP: cdd wrapper is already installed in `$PROFILE." -ForegroundColor DarkGray
 } else {
     Add-Content -Path $ProfilePath -Value ""
     Add-Content -Path $ProfilePath -Value $InstallMarker
     Add-Content -Path $ProfilePath -Value $SourceCmd
-    Write-Host "OK: cdd injetado no \$PROFILE." -ForegroundColor Green
+    Write-Host "OK: cdd injected into `$PROFILE." -ForegroundColor Green
 }
 
-Write-Host "Instalacao concluida com sucesso!" -ForegroundColor Green
-Write-Host "Abra um novo terminal ou digite '. `$PROFILE' para comecar a usar." -ForegroundColor Cyan
+Write-Host "Installation completed successfully!" -ForegroundColor Green
+Write-Host "Open a new terminal or run '. `$PROFILE' to start using it." -ForegroundColor Cyan

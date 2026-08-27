@@ -19,8 +19,8 @@ done
 if [ "$QUIET" -eq 0 ]; then
     clear
     printf "\e[36m┌──────────────────┬────────────────────────────────────────────────────────┐\e[0m\n"
-    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Projeto" "cdd (Change Directory Directly)"
-    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Acao" "Instalacao do Binario Autonomo"
+    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Project" "cdd (Change Directory Directly)"
+    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Action" "Standalone Binary Installation"
     printf "\e[36m└──────────────────┴────────────────────────────────────────────────────────┘\e[0m\n\n"
 fi
 
@@ -33,12 +33,12 @@ CDD_SOURCE_CMD="source \"$DEST/cdd.sh\""
 
 do_uninstall() {
     if [ "$QUIET" -eq 0 ]; then
-        echo "Aviso: Isso irá apagar os binários em ~/.local/share/cdd e remover a entrada do seu perfil."
+        echo "Warning: This will delete binaries in ~/.local/share/cdd and remove the entry from your profile."
         if [ "$FORCE" -eq 0 ]; then
-            read -r -p "Continuar? (1 = Sim / 0 = Não) [1]: " opt
+            read -r -p "Continue? (1 = Yes / 0 = No) [1]: " opt
             opt=${opt:-1}
             if [ "$opt" != "1" ]; then
-                echo "Abortado."
+                echo "Aborted."
                 exit 0
             fi
         fi
@@ -56,11 +56,11 @@ do_uninstall() {
         sed -i "\|source \"$DEST/cdd.sh\"|d" "$ZSHRC_FILE"
     fi
 
-    echo "Desinstalação concluída. Os arquivos e as injeções de perfil foram removidos."
+    echo "Uninstallation complete. Files and profile injections were removed."
 }
 
 do_install() {
-    echo "Copiando binário e wrapper para $DEST..."
+    echo "Copying binary and wrapper to $DEST..."
     mkdir -p "$DEST"
     cp "$DIR/cdd" "$DIR/cdd.sh" "$DEST/"
     chmod +x "$DEST/cdd" "$DEST/cdd.sh"
@@ -69,9 +69,9 @@ do_install() {
     if [ -f "$BASHRC_FILE" ]; then
         if ! grep -q "$INSTALL_MARKER" "$BASHRC_FILE"; then
             echo -e "\n$INSTALL_MARKER\n$CDD_SOURCE_CMD" >> "$BASHRC_FILE"
-            echo "OK: cdd injetado no $BASHRC_FILE"
+            echo "OK: cdd injected into $BASHRC_FILE"
         else
-            echo "SKIP: cdd já está presente no $BASHRC_FILE"
+            echo "SKIP: cdd is already present in $BASHRC_FILE"
         fi
     fi
 
@@ -79,14 +79,14 @@ do_install() {
     if [ -f "$ZSHRC_FILE" ]; then
         if ! grep -q "$INSTALL_MARKER" "$ZSHRC_FILE"; then
             echo -e "\n$INSTALL_MARKER\n$CDD_SOURCE_CMD" >> "$ZSHRC_FILE"
-            echo "OK: cdd injetado no $ZSHRC_FILE"
+            echo "OK: cdd injected into $ZSHRC_FILE"
         else
-            echo "SKIP: cdd já está presente no $ZSHRC_FILE"
+            echo "SKIP: cdd is already present in $ZSHRC_FILE"
         fi
     fi
 
-    echo "Instalação finalizada!"
-    echo "Execute 'source ~/.bashrc' ou abra um novo terminal para utilizar o 'cdd'."
+    echo "Installation finished!"
+    echo "Run 'source ~/.bashrc' or open a new terminal to use 'cdd'."
 }
 
 if [ "$UNINSTALL" -eq 1 ]; then

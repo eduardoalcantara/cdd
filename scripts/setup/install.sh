@@ -9,7 +9,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 # Se estamos na pasta core, suba mais um nivel (o shell costuma se perder no drive se for chamado daqui)
 if [ ! -f "$REPO_ROOT/spec-root.md" ]; then
-    echo "Erro: Não foi possível detectar a raiz do repositório cdd."
+    echo "Error: Could not detect cdd repository root."
     exit 1
 fi
 
@@ -29,10 +29,10 @@ if [ "$QUIET" -eq 0 ]; then
     clear
     # Print cyan header
     printf "\e[36m┌──────────────────┬────────────────────────────────────────────────────────┐\e[0m\n"
-    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Projeto" "cdd (Change Directory Directly)"
-    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Acao" "Instalacao / Atualizacao"
+    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Project" "cdd (Change Directory Directly)"
+    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Action" "Installation / Update"
     printf "\e[36m├──────────────────┼────────────────────────────────────────────────────────┤\e[0m\n"
-    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Raiz detectada" "${REPO_ROOT:0:54}"
+    printf "\e[36m│ \e[0m%-16s\e[36m │ \e[0m%-54s\e[36m │\e[0m\n" "Detected root" "${REPO_ROOT:0:54}"
     printf "\e[36m└──────────────────┴────────────────────────────────────────────────────────┘\e[0m\n\n"
 fi
 
@@ -43,12 +43,12 @@ CDD_SOURCE_CMD="source \"$REPO_ROOT/scripts/shell/cdd.sh\""
 
 do_uninstall() {
     if [ "$QUIET" -eq 0 ]; then
-        echo "Aviso: Isso irá remover as entradas do comando 'cdd' dos seus arquivos de perfil (.bashrc / .zshrc)."
+        echo "Warning: This will remove 'cdd' entries from your profile files (.bashrc / .zshrc)."
         if [ "$FORCE" -eq 0 ]; then
-            read -r -p "Continuar? (1 = Sim / 0 = Não) [1]: " opt
+            read -r -p "Continue? (1 = Yes / 0 = No) [1]: " opt
             opt=${opt:-1}
             if [ "$opt" != "1" ]; then
-                echo "Abortado."
+                echo "Aborted."
                 exit 0
             fi
         fi
@@ -66,29 +66,29 @@ do_uninstall() {
         sed -i "\|source \"$REPO_ROOT/scripts/shell/cdd.sh\"|d" "$ZSHRC_FILE"
     fi
 
-    echo "Desinstalação concluída. O comando 'cdd' foi removido do seu shell."
-    echo "Por favor, reinicie seu terminal para aplicar as mudanças."
+    echo "Uninstallation complete. The 'cdd' command was removed from your shell."
+    echo "Please restart your terminal to apply the changes."
 }
 
 do_install() {
-    echo "Compilando o binário cdd (Rust)..."
+    echo "Compiling cdd binary (Rust)..."
     cd "$REPO_ROOT/core"
     cargo build --release
 
     if [ $? -ne 0 ]; then
-        echo "FAIL: Erro ao compilar o cdd."
+        echo "FAIL: Failed to compile cdd."
         exit 1
     fi
 
-    echo "OK: Binário compilado com sucesso."
+    echo "OK: Binary compiled successfully."
 
     # Adicionar ao bashrc se não existir
     if [ -f "$BASHRC_FILE" ]; then
         if ! grep -q "$INSTALL_MARKER" "$BASHRC_FILE"; then
             echo -e "\n$INSTALL_MARKER\n$CDD_SOURCE_CMD" >> "$BASHRC_FILE"
-            echo "OK: Injetado no $BASHRC_FILE"
+            echo "OK: Injected into $BASHRC_FILE"
         else
-            echo "SKIP: cdd já está presente no $BASHRC_FILE"
+            echo "SKIP: cdd is already present in $BASHRC_FILE"
         fi
     fi
 
@@ -96,14 +96,14 @@ do_install() {
     if [ -f "$ZSHRC_FILE" ]; then
         if ! grep -q "$INSTALL_MARKER" "$ZSHRC_FILE"; then
             echo -e "\n$INSTALL_MARKER\n$CDD_SOURCE_CMD" >> "$ZSHRC_FILE"
-            echo "OK: Injetado no $ZSHRC_FILE"
+            echo "OK: Injected into $ZSHRC_FILE"
         else
-            echo "SKIP: cdd já está presente no $ZSHRC_FILE"
+            echo "SKIP: cdd is already present in $ZSHRC_FILE"
         fi
     fi
 
-    echo "Instalação concluída com sucesso!"
-    echo "Execute 'source ~/.bashrc' ou reinicie o terminal para usar o comando 'cdd'."
+    echo "Installation completed successfully!"
+    echo "Run 'source ~/.bashrc' or restart the terminal to use the 'cdd' command."
 }
 
 if [ "$UNINSTALL" -eq 1 ]; then

@@ -8,9 +8,9 @@ param (
 $ErrorActionPreference = "Stop"
 
 if ($Help) {
-    Write-Host "Uso: .\scripts\setup\build-dist.ps1"
+    Write-Host "Usage: .\scripts\setup\build-dist.ps1"
     Write-Host ""
-    Write-Host "Gera dist\cdd-windows-x86_64.zip e seu checksum SHA-256."
+    Write-Host "Generates dist\cdd-windows-x86_64.zip and its SHA-256 checksum."
     exit 0
 }
 
@@ -18,14 +18,14 @@ $ScriptPath = if ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path }
 $ScriptDir = Split-Path -Parent $ScriptPath
 $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..\..")
 
-Write-Host "Compilando cdd em modo release..." -ForegroundColor Yellow
+Write-Host "Compiling cdd in release mode..." -ForegroundColor Yellow
 Set-Location (Join-Path $RepoRoot "core")
 cargo build --release
 
 $DistDir = Join-Path $RepoRoot "dist"
 $PkgDir = Join-Path $DistDir "cdd-windows-x86_64"
 
-Write-Host "Preparando diretorio de distribuicao..." -ForegroundColor Yellow
+Write-Host "Preparing distribution directory..." -ForegroundColor Yellow
 if (!(Test-Path $DistDir)) { New-Item -ItemType Directory -Force -Path $DistDir | Out-Null }
 if (Test-Path $PkgDir) { Remove-Item -Recurse -Force $PkgDir }
 New-Item -ItemType Directory -Force -Path $PkgDir | Out-Null
@@ -45,11 +45,11 @@ $ChecksumPath = "$ZipPath.sha256"
 if (Test-Path $ZipPath) { Remove-Item -Force $ZipPath }
 if (Test-Path $ChecksumPath) { Remove-Item -Force $ChecksumPath }
 
-Write-Host "Compactando o pacote cdd-windows-x86_64.zip..." -ForegroundColor Yellow
+Write-Host "Compressing package cdd-windows-x86_64.zip..." -ForegroundColor Yellow
 Compress-Archive -Path (Join-Path $PkgDir "*") -DestinationPath $ZipPath
 $Hash = (Get-FileHash -Algorithm SHA256 -Path $ZipPath).Hash.ToLower()
 "$Hash  $(Split-Path -Leaf $ZipPath)" | Set-Content -Encoding ascii -Path $ChecksumPath
 Remove-Item -Recurse -Force $PkgDir
 
-Write-Host "Build concluido! Pacote gerado em: $ZipPath" -ForegroundColor Green
-Write-Host "Checksum gerado em: $ChecksumPath" -ForegroundColor Green
+Write-Host "Build complete! Package generated at: $ZipPath" -ForegroundColor Green
+Write-Host "Checksum generated at: $ChecksumPath" -ForegroundColor Green

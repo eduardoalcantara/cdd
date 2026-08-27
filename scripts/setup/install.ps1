@@ -14,7 +14,7 @@ $ScriptDir = Split-Path -Parent $ScriptPath
 $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..\..")
 
 if (!(Test-Path (Join-Path $RepoRoot "spec-root.md"))) {
-    Write-Host "Erro: Não foi possível detectar a raiz do repositório cdd." -ForegroundColor Red
+    Write-Host "Error: Could not detect cdd repository root." -ForegroundColor Red
     exit 1
 }
 
@@ -37,11 +37,11 @@ if (!$Quiet) {
     $ruleBot = $bl + ($h * $leftW) + $h + ($h * $rightW) + $br
     
     Write-Host $ruleTop -ForegroundColor Cyan
-    Write-Host "$v Projeto          $v cdd (Change Directory Directly)                        $v" -ForegroundColor Cyan
+    Write-Host "$v Project          $v cdd (Change Directory Directly)                        $v" -ForegroundColor Cyan
     if ($Uninstall) {
-        Write-Host "$v Acao             $v Desinstalacao do perfil do PowerShell                  $v" -ForegroundColor Cyan
+        Write-Host "$v Action           $v PowerShell profile uninstallation                      $v" -ForegroundColor Cyan
     } else {
-        Write-Host "$v Acao             $v Compilacao e Instalacao no Profile                     $v" -ForegroundColor Cyan
+        Write-Host "$v Action           $v Compilation and Profile Installation                   $v" -ForegroundColor Cyan
     }
     Write-Host $ruleMid -ForegroundColor Cyan
     
@@ -49,7 +49,7 @@ if (!$Quiet) {
     $RootTxt = $RepoRoot.Path
     if ($RootTxt.Length -gt 54) { $RootTxt = $RootTxt.Substring(0, 54) } else { $RootTxt = $RootTxt.PadRight(54) }
     
-    Write-Host "$v Raiz detectada   $v $RootTxt $v" -ForegroundColor Cyan
+    Write-Host "$v Detected root    $v $RootTxt $v" -ForegroundColor Cyan
     Write-Host $ruleBot -ForegroundColor Cyan
     Write-Host ""
 }
@@ -61,10 +61,10 @@ $SourceCmd = ". `"$CddScriptPath`""
 
 if ($Uninstall) {
     if (!$Quiet -and !$Force) {
-        Write-Host "Aviso: Isso ira remover a entrada do cdd do seu \$PROFILE ($ProfilePath)."
-        $ans = Read-Host "Continuar? (1 = Sim / 0 = Nao) [1]"
+        Write-Host "Warning: This will remove the cdd entry from your `$PROFILE ($ProfilePath)."
+        $ans = Read-Host "Continue? (1 = Yes / 0 = No) [1]"
         if ($ans -eq "" -or $ans -eq "1") { } else {
-            Write-Host "Abortado."
+            Write-Host "Aborted."
             exit 0
         }
     }
@@ -73,23 +73,23 @@ if ($Uninstall) {
         $content = Get-Content $ProfilePath
         $newContent = $content | Where-Object { $_ -notmatch $InstallMarker -and $_ -notmatch "scripts\\shell\\cdd.ps1" }
         Set-Content -Path $ProfilePath -Value $newContent
-        Write-Host "Desinstalacao concluida. O cdd foi removido do seu Profile." -ForegroundColor Green
+        Write-Host "Uninstallation complete. cdd was removed from your Profile." -ForegroundColor Green
     } else {
-        Write-Host "PROFILE nao encontrado, nada a remover."
+        Write-Host "PROFILE not found, nothing to remove."
     }
     exit 0
 }
 
 # Instalacao
-Write-Host "Compilando binario cdd (Rust)..." -ForegroundColor Yellow
+Write-Host "Compiling cdd binary (Rust)..." -ForegroundColor Yellow
 Set-Location (Join-Path $RepoRoot "core")
 cargo build --release
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "FAIL: Falha ao compilar o cdd." -ForegroundColor Red
+    Write-Host "FAIL: Failed to compile cdd." -ForegroundColor Red
     exit 1
 }
-Write-Host "OK: Compilado com sucesso." -ForegroundColor Green
+Write-Host "OK: Compiled successfully." -ForegroundColor Green
 
 # Criar profile se não existir
 if (!(Test-Path $ProfilePath)) {
@@ -104,13 +104,13 @@ $content = Get-Content $ProfilePath
 $alreadyInstalled = $content | Where-Object { $_ -match $InstallMarker }
 
 if ($alreadyInstalled) {
-    Write-Host "SKIP: cdd ja esta instalado no \$PROFILE." -ForegroundColor DarkGray
+    Write-Host "SKIP: cdd is already installed in `$PROFILE." -ForegroundColor DarkGray
 } else {
     Add-Content -Path $ProfilePath -Value ""
     Add-Content -Path $ProfilePath -Value $InstallMarker
     Add-Content -Path $ProfilePath -Value $SourceCmd
-    Write-Host "OK: cdd injetado no \$PROFILE." -ForegroundColor Green
+    Write-Host "OK: cdd injected into `$PROFILE." -ForegroundColor Green
 }
 
-Write-Host "Instalacao concluida com sucesso!" -ForegroundColor Green
-Write-Host "Reinicie o PowerShell ou rode '. `$PROFILE' para comecar a usar o comando 'cdd'." -ForegroundColor Cyan
+Write-Host "Installation completed successfully!" -ForegroundColor Green
+Write-Host "Restart PowerShell or run '. `$PROFILE' to start using the 'cdd' command." -ForegroundColor Cyan
