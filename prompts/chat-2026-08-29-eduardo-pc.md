@@ -35,3 +35,10 @@
 1. Commit com índice persistente, correção `G:\` vs `G:`, suporte CMD no install dev e logs CCIA.
 2. Excluído `scripts/shell/cdd-bin.exe` (artefato compilado local).
 3. Push para `origin/main`.
+
+## Prompt #48
+**Contexto/Pergunta:** Nova release no GitHub.
+
+**Ação/Resposta:**
+1. Criada e enviada a tag `v0.1.2` para disparar o workflow `.github/workflows/release.yml`.
+2. Release inclui: índice persistente, correção `G:\` vs `G:`, suporte CMD no install dev.
