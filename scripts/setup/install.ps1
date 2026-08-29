@@ -55,15 +55,58 @@ if (!$Quiet) {
 }
 
 $ProfilePath = $PROFILE
-$CddScriptPath = Join-Path $RepoRoot "scripts\shell\cdd.ps1"
+$ShellDir = Join-Path $RepoRoot "scripts\shell"
+$CddScriptPath = Join-Path $ShellDir "cdd.ps1"
+$CddCmdPath = Join-Path $ShellDir "cdd.cmd"
+$ReleaseBin = Join-Path $RepoRoot "core\target\release\cdd-bin.exe"
+$ShellBin = Join-Path $ShellDir "cdd-bin.exe"
 
-# Unblock the wrapper script to prevent execution policy errors for RemoteSigned
-if (Test-Path $CddScriptPath) {
-    Unblock-File -Path $CddScriptPath -ErrorAction SilentlyContinue
+# Unblock wrapper scripts to prevent execution policy errors for RemoteSigned
+foreach ($WrapperPath in @($CddScriptPath, $CddCmdPath)) {
+    if (Test-Path $WrapperPath) {
+        Unblock-File -Path $WrapperPath -ErrorAction SilentlyContinue
+    }
 }
 
 $InstallMarker = "# CDD_INSTALL_MARKER"
 $SourceCmd = ". `"$CddScriptPath`""
+
+function Add-CddDevShellToUserPath {
+    param([string]$Directory)
+
+    $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if ($UserPath -and $UserPath -match [regex]::Escape($Directory)) {
+        Write-Host "SKIP: $Directory is already in User PATH." -ForegroundColor DarkGray
+        return
+    }
+
+    if ([string]::IsNullOrWhiteSpace($UserPath)) {
+        $NewPath = $Directory
+    } elseif ($UserPath.EndsWith(";")) {
+        $NewPath = $UserPath + $Directory
+    } else {
+        $NewPath = $UserPath + ";" + $Directory
+    }
+
+    [Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
+    Write-Host "OK: Added $Directory to User PATH for CMD support." -ForegroundColor Green
+}
+
+function Remove-CddDevShellFromUserPath {
+    param([string]$Directory)
+
+    $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if (!$UserPath) {
+        return
+    }
+
+    $Paths = $UserPath -split ";" | Where-Object {
+        $_ -ne "" -and $_ -ne $Directory
+    }
+    $NewPath = ($Paths -join ";").TrimEnd(";")
+    [Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
+    Write-Host "Removed $Directory from User PATH." -ForegroundColor Green
+}
 
 if ($Uninstall) {
     if (!$Quiet -and !$Force) {
@@ -83,6 +126,14 @@ if ($Uninstall) {
     } else {
         Write-Host "PROFILE not found, nothing to remove."
     }
+
+    Remove-CddDevShellFromUserPath -Directory $ShellDir
+
+    if (Test-Path $ShellBin) {
+        Remove-Item -Path $ShellBin -Force
+        Write-Host "Removed local cdd-bin.exe copy from scripts/shell." -ForegroundColor Green
+    }
+
     exit 0
 }
 
@@ -96,6 +147,17 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 Write-Host "OK: Compiled successfully." -ForegroundColor Green
+
+Write-Host "Updating CMD wrapper binary..." -ForegroundColor Yellow
+if (!(Test-Path $ReleaseBin)) {
+    Write-Host "FAIL: Release binary not found at $ReleaseBin" -ForegroundColor Red
+    exit 1
+}
+Copy-Item -Path $ReleaseBin -Destination $ShellBin -Force
+Write-Host "OK: Copied cdd-bin.exe to scripts/shell." -ForegroundColor Green
+
+Write-Host "Updating User PATH for CMD support..." -ForegroundColor Yellow
+Add-CddDevShellToUserPath -Directory $ShellDir
 
 # Criar profile se não existir
 if (!(Test-Path $ProfilePath)) {
@@ -119,4 +181,6 @@ if ($alreadyInstalled) {
 }
 
 Write-Host "Installation completed successfully!" -ForegroundColor Green
-Write-Host "Restart PowerShell or run '. `$PROFILE' to start using the 'cdd' command." -ForegroundColor Cyan
+Write-Host "Restart your terminal (PowerShell or CMD) to start using the 'cdd' command." -ForegroundColor Cyan
+Write-Host "PowerShell: run '. `$PROFILE' in the current session." -ForegroundColor Cyan
+Write-Host "CMD: open a new Command Prompt window after PATH refresh." -ForegroundColor Cyan

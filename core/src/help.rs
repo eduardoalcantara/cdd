@@ -27,12 +27,16 @@ OPTIONS:
     -qa              Queries in any order
     -ci              Case insensitive matching
     -cr              Respect case matching
+    -ix              Use directory index (default)
+    -in              Skip index; scan disk directly
+    -ir              Rebuild index for the current search root
     --               End options; allows queries starting with a hyphen
 
 PERSISTENT CONFIGURATION:
     Append :on to persist an option and :off to remove it.
-    Examples: -l:on, -l:off, -15:on, -oa:on, -qa:off, -ci:on
+    Examples: -l:on, -l:off, -15:on, -oa:on, -qa:off, -ci:on, -ix:off
     File: system config directory/cdd/cdd.json
+    Index: system config directory/cdd/index.json
 
 EXAMPLES:
     cdd www app

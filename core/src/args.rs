@@ -9,6 +9,8 @@ pub struct AppArgs {
     pub list_order: ListOrder,
     pub query_order: QueryOrder,
     pub case_sensitivity: CaseSensitivity,
+    pub use_index: bool,
+    pub rebuild_index: bool,
     pub config_changed: bool,
     pub out_file: Option<String>,
     pub show_help: bool,
@@ -44,6 +46,8 @@ where
             list_order: config.list_order,
             query_order: config.query_order,
             case_sensitivity: config.case_sensitivity,
+            use_index: config.use_index,
+            rebuild_index: false,
             config_changed: false,
             out_file: None,
             show_help: true,
@@ -57,6 +61,8 @@ where
     let mut list_order = config.list_order;
     let mut query_order = config.query_order;
     let mut case_sensitivity = config.case_sensitivity;
+    let mut use_index = config.use_index;
+    let mut rebuild_index = false;
     let mut config_changed = false;
     let mut out_file = None;
     let mut options_ended = false;
@@ -164,6 +170,14 @@ where
                     &mut case_sensitivity,
                     &mut config_changed,
                 ),
+                "-ix" => apply_use_index(sticky, &mut config, &mut use_index, &mut config_changed),
+                "-in" => {
+                    use_index = false;
+                }
+                "-ir" => {
+                    rebuild_index = true;
+                    use_index = true;
+                }
                 _ => {
                     if let Some(raw_size) = core_arg.strip_prefix('-')
                         && raw_size.chars().all(|character| character.is_ascii_digit())
@@ -214,6 +228,8 @@ where
         list_order,
         query_order,
         case_sensitivity,
+        use_index,
+        rebuild_index,
         config_changed,
         out_file,
         show_help: false,
@@ -292,6 +308,29 @@ fn apply_case_sensitivity(
             *config_changed = true;
         }
         None => *effective = requested,
+    }
+}
+
+fn apply_use_index(
+    sticky: Option<bool>,
+    config: &mut Config,
+    effective: &mut bool,
+    config_changed: &mut bool,
+) {
+    match sticky {
+        Some(true) => {
+            config.use_index = true;
+            config.sticky.use_index = true;
+            *effective = true;
+            *config_changed = true;
+        }
+        Some(false) => {
+            config.use_index = false;
+            config.sticky.use_index = false;
+            *effective = false;
+            *config_changed = true;
+        }
+        None => *effective = true,
     }
 }
 
@@ -378,6 +417,19 @@ mod tests {
             parse(&["query", "-xyz"]).unwrap_err(),
             "unknown option: -xyz"
         );
+    }
+
+    #[test]
+    fn no_index_flag_disables_cache_for_one_invocation() {
+        let (args, _) = parse(&["query", "-in"]).unwrap();
+        assert!(!args.use_index);
+    }
+
+    #[test]
+    fn rebuild_index_flag_forces_rescan() {
+        let (args, _) = parse(&["query", "-ir"]).unwrap();
+        assert!(args.rebuild_index);
+        assert!(args.use_index);
     }
 
     #[test]

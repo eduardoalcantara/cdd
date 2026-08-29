@@ -7,19 +7,19 @@
 # Status persistido em [current]: somente running.
 
 [current]
-current_prompt_number = 43
-current_prompt_start_time = 2026-08-27T16:00:00-03:00
+current_prompt_number = 47
+current_prompt_start_time = 2026-08-29T15:09:00-03:00
 current_prompt_status = running
 current_prompt_llm = Gemini 3.1 Pro
-current_prompt_summary = Build release e push da nova tag para rodar a github action
+current_prompt_summary = Commit e push das alterações (índice, CMD, fix G:\)
 
 [last]
-last_prompt_number = 42
-last_prompt_start_time = 2026-08-27T15:57:00-03:00
-last_prompt_duration_seconds = 180
+last_prompt_number = 46
+last_prompt_start_time = 2026-08-29T15:04:00-03:00
+last_prompt_duration_seconds = 105
 last_prompt_llm = Gemini 3.1 Pro
-last_prompt_summary = Aclarar confusão sobre a execução do install.cmd do NVM
+last_prompt_summary = Corrigir raiz de busca no Windows (G: vs G:\)
 
 [totals]
-total_prompts_tracked = 43
-total_execution_seconds = 10199
+total_prompts_tracked = 47
+total_execution_seconds = 11109

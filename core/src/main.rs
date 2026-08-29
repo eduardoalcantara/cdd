@@ -1,6 +1,7 @@
 mod args;
 mod config;
 mod help;
+mod index;
 mod pattern;
 mod search;
 mod tui;

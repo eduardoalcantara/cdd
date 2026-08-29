@@ -1,8 +1,33 @@
 use crate::args::AppArgs;
 use crate::config::{ListOrder, QueryOrder};
+use crate::index::DirectoryIndex;
 use crate::pattern::{QueryPattern, compile_all};
 use jwalk::WalkDir;
 use std::path::{Component, Path, PathBuf};
+
+pub fn path_to_components(path: &Path, root: &Path) -> Vec<String> {
+    let relative = path.strip_prefix(root).unwrap_or(path);
+    relative
+        .components()
+        .filter_map(|component| match component {
+            Component::Normal(value) => Some(value.to_string_lossy().into_owned()),
+            _ => None,
+        })
+        .collect()
+}
+
+#[cfg(target_os = "windows")]
+fn windows_drive_root_from(path: &Path) -> Option<PathBuf> {
+    let text = path.to_string_lossy();
+    if text.len() >= 2 {
+        let bytes = text.as_bytes();
+        if bytes[1] == b':' && bytes[0].is_ascii_alphabetic() {
+            let letter = bytes[0].to_ascii_uppercase() as char;
+            return Some(PathBuf::from(format!("{letter}:\\")));
+        }
+    }
+    None
+}
 
 #[cfg(target_os = "windows")]
 fn get_root(queries: &mut Vec<String>) -> PathBuf {
@@ -15,10 +40,9 @@ fn get_root(queries: &mut Vec<String>) -> PathBuf {
         }
     }
 
-    // Se não, pegue a raiz do diretório atual
     if let Ok(current_dir) = std::env::current_dir() {
-        if let Some(prefix) = current_dir.components().next() {
-            return PathBuf::from(prefix.as_os_str());
+        if let Some(root) = windows_drive_root_from(&current_dir) {
+            return root;
         }
     }
 
@@ -46,7 +70,39 @@ fn find_directories_from(
     }
 
     let patterns = compile_all(queries, args.case_sensitivity)?;
+
+    if args.use_index && !args.rebuild_index {
+        let mut index = DirectoryIndex::load();
+        if index.prune_missing(root) > 0 {
+            index.save()?;
+        }
+        let cached = index.search(root, &patterns, args.query_order, args.lucky_pick);
+        if !cached.is_empty() {
+            return Ok(sort_matches(cached, args.list_order));
+        }
+    }
+
+    let (matches, discovered) = scan_disk(root, &patterns, args)?;
+
+    if args.use_index || args.rebuild_index {
+        let mut index = DirectoryIndex::load();
+        if args.rebuild_index {
+            index.clear_root(root);
+        }
+        index.merge_paths(root, discovered);
+        index.save()?;
+    }
+
+    Ok(sort_matches(matches, args.list_order))
+}
+
+fn scan_disk(
+    root: &Path,
+    patterns: &[QueryPattern],
+    args: &AppArgs,
+) -> Result<(Vec<String>, Vec<String>), String> {
     let mut matches = Vec::new();
+    let mut discovered = Vec::new();
     let exclusion_root = root.to_path_buf();
 
     let walker = WalkDir::new(root).skip_hidden(true).process_read_dir(
@@ -66,33 +122,35 @@ fn find_directories_from(
         }
 
         let path = entry.path();
-        let relative = path.strip_prefix(root).unwrap_or(&path);
-        let components: Vec<String> = relative
-            .components()
-            .filter_map(|component| match component {
-                Component::Normal(value) => Some(value.to_string_lossy().into_owned()),
-                _ => None,
-            })
-            .collect();
+        let path_text = path.to_string_lossy().into_owned();
+        discovered.push(path_text.clone());
 
-        if path_matches(&components, &patterns, args.query_order) {
-            matches.push(path.to_string_lossy().into_owned());
+        let components = path_to_components(&path, root);
+        if path_matches(&components, patterns, args.query_order) {
+            matches.push(path_text);
             if args.lucky_pick {
                 break;
             }
         }
     }
 
-    match args.list_order {
+    Ok((matches, discovered))
+}
+
+fn sort_matches(mut matches: Vec<String>, list_order: ListOrder) -> Vec<String> {
+    match list_order {
         ListOrder::Ascending => matches.sort(),
         ListOrder::Descending => matches.sort_by(|a, b| b.cmp(a)),
         ListOrder::Find => {}
     }
-
-    Ok(matches)
+    matches
 }
 
-fn path_matches(components: &[String], patterns: &[QueryPattern], query_order: QueryOrder) -> bool {
+pub fn path_matches(
+    components: &[String],
+    patterns: &[QueryPattern],
+    query_order: QueryOrder,
+) -> bool {
     let Some(destination) = components.last() else {
         return false;
     };
@@ -182,6 +240,8 @@ mod tests {
             list_order: ListOrder::Ascending,
             query_order,
             case_sensitivity: crate::config::CaseSensitivity::Insensitive,
+            use_index: true,
+            rebuild_index: false,
             config_changed: false,
             out_file: None,
             show_help: false,
@@ -192,7 +252,11 @@ mod tests {
     #[test]
     fn sequential_inverse_and_any_respect_directory_components() {
         let components = vec!["var".to_string(), "www".to_string(), "app1".to_string()];
-        let patterns = compile_all(&["www".to_string(), "app".to_string()], crate::config::CaseSensitivity::Insensitive).unwrap();
+        let patterns = compile_all(
+            &["www".to_string(), "app".to_string()],
+            crate::config::CaseSensitivity::Insensitive,
+        )
+        .unwrap();
 
         assert!(path_matches(&components, &patterns, QueryOrder::Sequential));
         assert!(!path_matches(&components, &patterns, QueryOrder::Inverse));
@@ -250,6 +314,16 @@ mod tests {
         assert_eq!(results.len(), 1);
         let expected = std::path::PathBuf::from("Workspace").join("MyProject");
         assert!(results[0].ends_with(expected.to_str().unwrap()));
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_drive_root_uses_backslash_root_not_current_directory() {
+        let deep = PathBuf::from(r"G:\projects\linux\scripts");
+        assert_eq!(
+            windows_drive_root_from(&deep),
+            Some(PathBuf::from(r"G:\"))
+        );
     }
 
     #[cfg(not(target_os = "windows"))]

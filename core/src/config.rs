@@ -45,6 +45,7 @@ pub struct StickyState {
     pub list_order: bool,
     pub query_order: bool,
     pub case_sensitivity: bool,
+    pub use_index: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -55,6 +56,7 @@ pub struct Config {
     pub list_order: ListOrder,
     pub query_order: QueryOrder,
     pub case_sensitivity: CaseSensitivity,
+    pub use_index: bool,
     pub sticky: StickyState,
 }
 
@@ -66,6 +68,7 @@ impl Default for Config {
             list_order: ListOrder::default(),
             query_order: QueryOrder::default(),
             case_sensitivity: CaseSensitivity::default(),
+            use_index: true,
             sticky: StickyState::default(),
         }
     }
@@ -145,6 +148,9 @@ impl Config {
             };
             labels.push(format!("{flag}=on"));
         }
+        if self.sticky.use_index {
+            labels.push("-ix=on".to_string());
+        }
 
         labels
     }
@@ -155,6 +161,7 @@ impl Config {
         self.sticky.list_order = self.list_order != ListOrder::default();
         self.sticky.query_order = self.query_order != QueryOrder::default();
         self.sticky.case_sensitivity = self.case_sensitivity != CaseSensitivity::default();
+        self.sticky.use_index = !self.use_index;
     }
 }
 
