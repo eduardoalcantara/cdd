@@ -5,6 +5,16 @@
 $global:CddScriptPath = if ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path } else { $PSCommandPath }
 $global:CddScriptDir = Split-Path -Parent $global:CddScriptPath
 
+function Normalize-CddArg {
+    param([string]$Arg)
+
+    switch ($Arg) {
+        '-ix:' { return '-ixon' }
+        '-ix:off' { return '-ixoff' }
+        default { return $Arg }
+    }
+}
+
 function cdd {
     $DebugBin = Join-Path $global:CddScriptDir "..\..\core\target\debug\cdd-bin.exe"
     $ReleaseBin = Join-Path $global:CddScriptDir "..\..\core\target\release\cdd-bin.exe"
@@ -31,8 +41,8 @@ function cdd {
     $CddExitCode = 1
 
     try {
-        # Pass arguments to the rust binary
-        & $CddBin $args --cdd-out-file $TmpFile
+        $PassArgs = @($args | ForEach-Object { Normalize-CddArg ([string]$_) })
+        & $CddBin @PassArgs --cdd-out-file $TmpFile
         $CddExitCode = $LASTEXITCODE
 
         if ($CddExitCode -eq 0 -and (Get-Item $TmpFile).Length -gt 0) {

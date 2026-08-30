@@ -28,6 +28,8 @@ OPTIONS:
     -ci              Case insensitive matching
     -cr              Respect case matching
     -ix              Use directory index (default)
+    -ixon            Persist index enabled (PowerShell-safe)
+    -ixoff           Persist index disabled (PowerShell-safe)
     -in              Skip index; scan disk directly
     -ir              Rebuild index for the current search root
     --               End options; allows queries starting with a hyphen
@@ -35,6 +37,9 @@ OPTIONS:
 PERSISTENT CONFIGURATION:
     Append :on to persist an option and :off to remove it.
     Examples: -l:on, -l:off, -15:on, -oa:on, -qa:off, -ci:on, -ix:off
+    In PowerShell, quote flags with colons: cdd query '-ix:on'
+    Or use PowerShell-safe forms such as -ixon and -ixoff.
+    Sticky-only update (no search): cdd -ixon
     File: system config directory/cdd/cdd.json
     Index: system config directory/cdd/index.json
 

@@ -128,10 +128,6 @@ impl DirectoryIndex {
         let mut matches = Vec::new();
 
         for path in &entry.paths {
-            if !Path::new(path).is_dir() {
-                continue;
-            }
-
             let components = path_to_components(Path::new(path), root);
             if path_matches(&components, patterns, query_order) {
                 matches.push(path.clone());
@@ -141,6 +137,7 @@ impl DirectoryIndex {
             }
         }
 
+        matches.retain(|path| Path::new(path).is_dir());
         matches
     }
 }
@@ -182,6 +179,31 @@ mod tests {
         let mut index = DirectoryIndex::default();
         let target = root.join("projects/app1");
         index.merge_paths(root, vec![target.to_string_lossy().into_owned()]);
+
+        let patterns = compile_all(&["app".to_string()], CaseSensitivity::Insensitive).unwrap();
+        let matches = index.search(root, &patterns, QueryOrder::Sequential, false);
+
+        assert_eq!(matches.len(), 1);
+        assert!(matches[0].ends_with("app1"));
+    }
+
+    #[test]
+    fn search_skips_stale_paths_without_touching_every_entry_on_disk() {
+        let temp = TempDir::new().unwrap();
+        let root = temp.path();
+        fs::create_dir_all(root.join("projects/app1")).unwrap();
+
+        let mut index = DirectoryIndex::default();
+        let live = root.join("projects/app1");
+        index.merge_paths(
+            root,
+            vec![
+                live.to_string_lossy().into_owned(),
+                root.join("ghost/removed")
+                    .to_string_lossy()
+                    .into_owned(),
+            ],
+        );
 
         let patterns = compile_all(&["app".to_string()], CaseSensitivity::Insensitive).unwrap();
         let matches = index.search(root, &patterns, QueryOrder::Sequential, false);

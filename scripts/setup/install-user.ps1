@@ -72,9 +72,30 @@ if ($Uninstall) {
 
 Write-Host "Copying binary files to $Dest..." -ForegroundColor Yellow
 if (!(Test-Path $Dest)) { New-Item -ItemType Directory -Force -Path $Dest | Out-Null }
-Copy-Item (Join-Path $ScriptDir "cdd-bin.exe") -Destination $Dest -Force
-Copy-Item (Join-Path $ScriptDir "cdd.ps1") -Destination $Dest -Force
-Copy-Item (Join-Path $ScriptDir "cdd.cmd") -Destination $Dest -Force
+
+$BinSource = Join-Path $ScriptDir "cdd-bin.exe"
+$Ps1Source = Join-Path $ScriptDir "cdd.ps1"
+$CmdSource = Join-Path $ScriptDir "cdd.cmd"
+
+if (!(Test-Path $BinSource)) {
+    $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..\..") -ErrorAction SilentlyContinue
+    $DevInstall = Join-Path $ScriptDir "install.cmd"
+    if ($RepoRoot -and (Test-Path (Join-Path $RepoRoot "spec-root.md"))) {
+        Write-Host "FAIL: install-user is for the release ZIP, not the development repository." -ForegroundColor Red
+        Write-Host "From this repo, run instead:" -ForegroundColor Yellow
+        Write-Host "  $DevInstall" -ForegroundColor Cyan
+        Write-Host "Or build a standalone package first:" -ForegroundColor Yellow
+        Write-Host "  .\scripts\setup\build-dist.ps1" -ForegroundColor Cyan
+        exit 1
+    }
+    Write-Host "FAIL: cdd-bin.exe not found next to this installer ($BinSource)." -ForegroundColor Red
+    Write-Host "Extract the release ZIP and run install.cmd from that folder." -ForegroundColor Yellow
+    exit 1
+}
+
+Copy-Item $BinSource -Destination $Dest -Force
+Copy-Item $Ps1Source -Destination $Dest -Force
+Copy-Item $CmdSource -Destination $Dest -Force
 
 # Unblock the wrapper script to prevent execution policy errors for RemoteSigned
 Unblock-File -Path (Join-Path $Dest "cdd.ps1") -ErrorAction SilentlyContinue

@@ -2,6 +2,7 @@ use crate::args::AppArgs;
 use crate::config::{ListOrder, QueryOrder};
 use crate::index::DirectoryIndex;
 use crate::pattern::{QueryPattern, compile_all};
+use crate::wait_animation::WaitAnimation;
 use jwalk::WalkDir;
 use std::path::{Component, Path, PathBuf};
 
@@ -70,12 +71,10 @@ fn find_directories_from(
     }
 
     let patterns = compile_all(queries, args.case_sensitivity)?;
+    let _wait_animation = WaitAnimation::start();
 
     if args.use_index && !args.rebuild_index {
-        let mut index = DirectoryIndex::load();
-        if index.prune_missing(root) > 0 {
-            index.save()?;
-        }
+        let index = DirectoryIndex::load();
         let cached = index.search(root, &patterns, args.query_order, args.lucky_pick);
         if !cached.is_empty() {
             return Ok(sort_matches(cached, args.list_order));
@@ -90,6 +89,9 @@ fn find_directories_from(
             index.clear_root(root);
         }
         index.merge_paths(root, discovered);
+        if args.rebuild_index {
+            index.prune_missing(root);
+        }
         index.save()?;
     }
 

@@ -5,6 +5,7 @@ mod index;
 mod pattern;
 mod search;
 mod tui;
+mod wait_animation;
 
 fn main() {
     let cfg = config::Config::load();
@@ -31,8 +32,11 @@ fn main() {
     }
 
     if app_args.queries.is_empty() {
+        if app_args.config_changed {
+            return;
+        }
         eprintln!("cdd: usage: cdd <query> [queries...] [options]");
-        eprintln!("Use 'cdd --help' to see examples.");
+        eprintln!("Use 'cdd --help' to see available options.");
         std::process::exit(2);
     }
 

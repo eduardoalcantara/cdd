@@ -171,6 +171,8 @@ where
                     &mut config_changed,
                 ),
                 "-ix" => apply_use_index(sticky, &mut config, &mut use_index, &mut config_changed),
+                "-ixon" => apply_use_index(Some(true), &mut config, &mut use_index, &mut config_changed),
+                "-ixoff" => apply_use_index(Some(false), &mut config, &mut use_index, &mut config_changed),
                 "-in" => {
                     use_index = false;
                 }
@@ -208,6 +210,11 @@ where
                             None => list_size = size,
                         }
                     } else {
+                        if arg.ends_with(':') && !arg.ends_with(":on") && !arg.ends_with(":off") {
+                            return Err(format!(
+                                "unknown option: {arg} (in PowerShell quote sticky flags, e.g. '-ix:on', or use -ixon / -ixoff)"
+                            ));
+                        }
                         return Err(format!("unknown option: {arg}"));
                     }
                 }
@@ -430,6 +437,30 @@ mod tests {
         let (args, _) = parse(&["query", "-ir"]).unwrap();
         assert!(args.rebuild_index);
         assert!(args.use_index);
+    }
+
+    #[test]
+    fn ixon_enables_index_sticky_without_colon() {
+        let (args, config) = parse(&["query", "-ixon"]).unwrap();
+        assert!(args.use_index);
+        assert!(config.sticky.use_index);
+        assert!(config.use_index);
+    }
+
+    #[test]
+    fn ixoff_disables_index_sticky_without_colon() {
+        let (args, config) = parse(&["query", "-ixoff"]).unwrap();
+        assert!(!args.use_index);
+        assert!(!config.sticky.use_index);
+        assert!(!config.use_index);
+    }
+
+    #[test]
+    fn sticky_only_invocation_has_no_queries() {
+        let (args, config) = parse(&["-ixon"]).unwrap();
+        assert!(args.config_changed);
+        assert!(args.queries.is_empty());
+        assert!(config.sticky.use_index);
     }
 
     #[test]
