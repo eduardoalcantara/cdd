@@ -1,5 +1,5 @@
 use crate::pattern::QueryPattern;
-use crate::search::{path_matches, path_to_components};
+use crate::search::{is_strict_descendant, path_matches, path_to_components};
 use crate::config::QueryOrder;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -140,6 +140,25 @@ impl DirectoryIndex {
         matches.retain(|path| Path::new(path).is_dir());
         matches
     }
+
+    pub fn search_under(
+        &self,
+        root: &Path,
+        under: &Path,
+        patterns: &[QueryPattern],
+        query_order: QueryOrder,
+        lucky_pick: bool,
+    ) -> Vec<String> {
+        let mut matches: Vec<String> = self
+            .search(root, patterns, query_order, false)
+            .into_iter()
+            .filter(|path| is_strict_descendant(Path::new(path), under))
+            .collect();
+        if lucky_pick {
+            matches.truncate(1);
+        }
+        matches
+    }
 }
 
 fn now_unix() -> u64 {
@@ -210,5 +229,35 @@ mod tests {
 
         assert_eq!(matches.len(), 1);
         assert!(matches[0].ends_with("app1"));
+    }
+
+    #[test]
+    fn search_under_keeps_only_descendants_of_cwd() {
+        let temp = TempDir::new().unwrap();
+        let root = temp.path();
+        fs::create_dir_all(root.join("here/app1")).unwrap();
+        fs::create_dir_all(root.join("elsewhere/app1")).unwrap();
+
+        let mut index = DirectoryIndex::default();
+        index.merge_paths(
+            root,
+            vec![
+                root.join("here/app1").to_string_lossy().into_owned(),
+                root.join("elsewhere/app1").to_string_lossy().into_owned(),
+            ],
+        );
+
+        let patterns = compile_all(&["app".to_string()], CaseSensitivity::Insensitive).unwrap();
+        let matches = index.search_under(
+            root,
+            &root.join("here"),
+            &patterns,
+            QueryOrder::Sequential,
+            false,
+        );
+
+        assert_eq!(matches.len(), 1);
+        assert!(matches[0].contains("here"));
+        assert!(!matches[0].contains("elsewhere"));
     }
 }

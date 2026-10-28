@@ -1,5 +1,11 @@
 # timeline.md — histórico evolutivo (cronológico reverso)
 
+## 2026-10-28 — Preferência da pasta atual na busca
+
+- **Evento:** A busca passou a pesquisar primeiro os descendentes do diretório atual do terminal.
+- **Impacto:** Se a pasta desejada está na árvore local, o `cdd` não varre o disco inteiro. Sem match local, a busca continua na raiz do drive (`G:\` / `C:\`) ou em `/`.
+- **Arquivos afetados:** `core/src/search.rs`, `core/src/index.rs`, `core/src/help.rs`, `specs/done/SPEC-cdd-core.md`, `docs/HOW_IT_WORKS.md`, `docs/HOW_TO_USE.md`, `docs/usage.md`, `status.md`.
+
 ## 2026-08-26 — Documentação consolidada e pacotes atualizados
 
 - **Evento:** Criação dos guias de uso, instalação e arquitetura/algoritmo.

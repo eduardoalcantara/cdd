@@ -72,6 +72,8 @@ O arquivo é `cdd/cdd.json` dentro do diretório de configuração do sistema (`
 
 ## Raiz da busca
 
+- Primeiro: pasta atual do terminal e suas subpastas.
+- Se não houver match: raiz do disco.
 - Linux/WSL: `/`, excluindo `/proc`, `/sys`, `/dev` e `/run`.
 - Windows: raiz do drive atual.
 - Windows com letra inicial: `cdd d projeto` pesquisa em `D:\`.

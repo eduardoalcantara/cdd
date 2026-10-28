@@ -7,19 +7,19 @@
 # Status persistido em [current]: somente running.
 
 [current]
-current_prompt_number = 57
-current_prompt_start_time = 2026-08-30T10:00:00-03:00
+current_prompt_number = 59
+current_prompt_start_time = 2026-10-28T15:19:00-03:00
 current_prompt_status = running
-current_prompt_llm = Gemini 3.1 Pro
-current_prompt_summary = Commit+Push das mudanças pós-v0.1.2
+current_prompt_llm = Composer
+current_prompt_summary = Commit e push da busca CWD-first
 
 [last]
-last_prompt_number = 56
-last_prompt_start_time = 2026-08-30T09:49:00-03:00
-last_prompt_duration_seconds = 660
-last_prompt_llm = Gemini 3.1 Pro
-last_prompt_summary = Erro install-user.cmd no repo dev
+last_prompt_number = 58
+last_prompt_start_time = 2026-10-28T14:45:00-03:00
+last_prompt_duration_seconds = 2040
+last_prompt_llm = Composer
+last_prompt_summary = Buscar CWD primeiro, depois o disco
 
 [totals]
-total_prompts_tracked = 57
-total_execution_seconds = 12709
+total_prompts_tracked = 59
+total_execution_seconds = 14929

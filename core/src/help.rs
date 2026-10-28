@@ -11,6 +11,8 @@ SEARCH:
     ? matches exactly one character in a directory name.
     The final query identifies the target directory itself; its descendants
     are not included just because they inherit the path match.
+    Search starts in the current directory. If nothing matches, it continues
+    from the drive root (Windows) or / (Linux).
 
     In Bash/Zsh, quote wildcards to prevent the shell
     from expanding them before cdd: cdd 'proj*' 'app?'

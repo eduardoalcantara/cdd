@@ -2,7 +2,7 @@
 
 ## Última atualização
 
-2026-08-26
+2026-10-28
 
 ## Resumo do estado atual
 
@@ -32,6 +32,7 @@ O core funcional do `cdd` está implementado: busca parcial literal, curingas `*
 - [x] Pacote Windows x86_64 cross-compilado, validado como PE32+ e acompanhado de checksum SHA-256
 - [x] Guia end-user em `docs/usage.md`
 - [x] Spec do core concluída em `specs/done/SPEC-cdd-core.md`
+- [x] Busca prefere a pasta atual do terminal e só então varre a raiz do disco
 
 ## Tarefas pendentes
 
@@ -44,6 +45,8 @@ O core funcional do `cdd` está implementado: busca parcial literal, curingas `*
 2. Gerar e publicar a primeira release com os scripts `build-dist`.
 
 ## Mudanças recentes
+
+- A busca pesquisa primeiro os descendentes da pasta atual; só então varre a raiz do disco.
 
 - Regras de `.prompt-status`: gravar só o início; Tempo do rodapé calculado com `now()`.
 - Escopo alinhado: correspondência parcial + curingas explícitos; fuzzy/autocorreção removido.

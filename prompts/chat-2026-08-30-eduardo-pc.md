@@ -59,3 +59,8 @@
 **Contexto/Pergunta:** Erro ao rodar `install-user.cmd` no repo: `cdd-bin.exe` não encontrado em `scripts\setup\`.
 
 **Ação/Resposta:** `install-user` é só para o ZIP de release; no repo usar `install.cmd`. Guard clause adicionada em `install-user.ps1` com mensagem orientativa.
+
+## Prompt #57
+**Contexto/Pergunta:** Commit+Push
+
+**Ação/Resposta:** Commit `7fe4b98` — Pac-Man, fix índice, -ixon/-ixoff, sticky-only, install-user guard; push para origin/main.

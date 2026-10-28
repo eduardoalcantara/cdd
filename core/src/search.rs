@@ -57,10 +57,37 @@ fn get_root(_queries: &mut Vec<String>) -> PathBuf {
 
 pub fn find_directories(args: &AppArgs) -> Result<Vec<String>, String> {
     let mut queries = args.queries.clone();
-    let root = get_root(&mut queries);
-    find_directories_from(&root, &queries, args)
+    let disk_root = get_root(&mut queries);
+    let cwd = std::env::current_dir().ok();
+    find_directories_prefer_local(cwd.as_deref(), &disk_root, &queries, args)
 }
 
+fn find_directories_prefer_local(
+    cwd: Option<&Path>,
+    disk_root: &Path,
+    queries: &[String],
+    args: &AppArgs,
+) -> Result<Vec<String>, String> {
+    if queries.is_empty() {
+        return Ok(vec![disk_root.to_string_lossy().into_owned()]);
+    }
+
+    let patterns = compile_all(queries, args.case_sensitivity)?;
+
+    if !args.rebuild_index {
+        if let Some(cwd) = cwd {
+            if is_strict_descendant(cwd, disk_root) {
+                if let Some(local) = search_under_cwd(cwd, disk_root, &patterns, args)? {
+                    return Ok(sort_matches(local, args.list_order));
+                }
+            }
+        }
+    }
+
+    search_from_root(disk_root, disk_root, &patterns, args, true)
+}
+
+#[cfg(test)]
 fn find_directories_from(
     root: &Path,
     queries: &[String],
@@ -71,26 +98,68 @@ fn find_directories_from(
     }
 
     let patterns = compile_all(queries, args.case_sensitivity)?;
-    let _wait_animation = WaitAnimation::start();
+    search_from_root(root, root, &patterns, args, true)
+}
+
+fn search_under_cwd(
+    cwd: &Path,
+    disk_root: &Path,
+    patterns: &[QueryPattern],
+    args: &AppArgs,
+) -> Result<Option<Vec<String>>, String> {
+    if args.use_index {
+        let index = DirectoryIndex::load();
+        let cached = index.search_under(disk_root, cwd, patterns, args.query_order, args.lucky_pick);
+        if !cached.is_empty() {
+            return Ok(Some(cached));
+        }
+    }
+
+    let (matches, discovered) = scan_disk(cwd, disk_root, patterns, args)?;
+    if matches.is_empty() {
+        return Ok(None);
+    }
+
+    if args.use_index {
+        let mut index = DirectoryIndex::load();
+        index.merge_paths(disk_root, discovered);
+        index.save()?;
+    }
+
+    Ok(Some(matches))
+}
+
+fn search_from_root(
+    walk_root: &Path,
+    match_root: &Path,
+    patterns: &[QueryPattern],
+    args: &AppArgs,
+    animate: bool,
+) -> Result<Vec<String>, String> {
+    let _wait_animation = if animate {
+        Some(WaitAnimation::start())
+    } else {
+        None
+    };
 
     if args.use_index && !args.rebuild_index {
         let index = DirectoryIndex::load();
-        let cached = index.search(root, &patterns, args.query_order, args.lucky_pick);
+        let cached = index.search(match_root, patterns, args.query_order, args.lucky_pick);
         if !cached.is_empty() {
             return Ok(sort_matches(cached, args.list_order));
         }
     }
 
-    let (matches, discovered) = scan_disk(root, &patterns, args)?;
+    let (matches, discovered) = scan_disk(walk_root, match_root, patterns, args)?;
 
     if args.use_index || args.rebuild_index {
         let mut index = DirectoryIndex::load();
         if args.rebuild_index {
-            index.clear_root(root);
+            index.clear_root(match_root);
         }
-        index.merge_paths(root, discovered);
+        index.merge_paths(match_root, discovered);
         if args.rebuild_index {
-            index.prune_missing(root);
+            index.prune_missing(match_root);
         }
         index.save()?;
     }
@@ -99,15 +168,16 @@ fn find_directories_from(
 }
 
 fn scan_disk(
-    root: &Path,
+    walk_root: &Path,
+    match_root: &Path,
     patterns: &[QueryPattern],
     args: &AppArgs,
 ) -> Result<(Vec<String>, Vec<String>), String> {
     let mut matches = Vec::new();
     let mut discovered = Vec::new();
-    let exclusion_root = root.to_path_buf();
+    let exclusion_root = walk_root.to_path_buf();
 
-    let walker = WalkDir::new(root).skip_hidden(true).process_read_dir(
+    let walker = WalkDir::new(walk_root).skip_hidden(true).process_read_dir(
         move |_depth, _path, _state, children| {
             children.retain(|entry| {
                 entry
@@ -127,7 +197,7 @@ fn scan_disk(
         let path_text = path.to_string_lossy().into_owned();
         discovered.push(path_text.clone());
 
-        let components = path_to_components(&path, root);
+        let components = path_to_components(&path, match_root);
         if path_matches(&components, patterns, args.query_order) {
             matches.push(path_text);
             if args.lucky_pick {
@@ -137,6 +207,44 @@ fn scan_disk(
     }
 
     Ok((matches, discovered))
+}
+
+pub fn is_strict_descendant(path: &Path, ancestor: &Path) -> bool {
+    let path_key = normalize_path_key(path);
+    let ancestor_key = normalize_path_key(ancestor);
+    if path_key == ancestor_key {
+        return false;
+    }
+    Path::new(&path_key)
+        .strip_prefix(Path::new(&ancestor_key))
+        .is_ok()
+}
+
+fn normalize_path_key(path: &Path) -> String {
+    let mut text = path.to_string_lossy().replace('/', std::path::MAIN_SEPARATOR_STR);
+
+    #[cfg(windows)]
+    {
+        text = text.replace('/', "\\");
+        if text.len() >= 2 && text.as_bytes()[1] == b':' {
+            let mut chars: Vec<char> = text.chars().collect();
+            chars[0] = chars[0].to_ascii_uppercase();
+            text = chars.into_iter().collect();
+        }
+        if text.len() > 3 && text.ends_with('\\') {
+            text.pop();
+        }
+        text = text.to_lowercase();
+    }
+
+    #[cfg(not(windows))]
+    {
+        if text.len() > 1 && text.ends_with('/') {
+            text.pop();
+        }
+    }
+
+    text
 }
 
 fn sort_matches(mut matches: Vec<String>, list_order: ListOrder) -> Vec<String> {
@@ -242,7 +350,7 @@ mod tests {
             list_order: ListOrder::Ascending,
             query_order,
             case_sensitivity: crate::config::CaseSensitivity::Insensitive,
-            use_index: true,
+            use_index: false,
             rebuild_index: false,
             config_changed: false,
             out_file: None,
@@ -316,6 +424,70 @@ mod tests {
         assert_eq!(results.len(), 1);
         let expected = std::path::PathBuf::from("Workspace").join("MyProject");
         assert!(results[0].ends_with(expected.to_str().unwrap()));
+    }
+
+    #[test]
+    fn prefers_matches_under_cwd_over_elsewhere_on_disk() {
+        let temp = tempfile::tempdir().unwrap();
+        let disk = temp.path();
+        let cwd = disk.join("here");
+        fs::create_dir_all(cwd.join("target-dir")).unwrap();
+        fs::create_dir_all(disk.join("elsewhere/target-dir")).unwrap();
+
+        let app_args = args(&["target-dir"], QueryOrder::Sequential);
+        let results =
+            find_directories_prefer_local(Some(&cwd), disk, &app_args.queries, &app_args).unwrap();
+
+        assert_eq!(results.len(), 1);
+        let expected = cwd.join("target-dir");
+        assert!(results[0].ends_with(expected.file_name().unwrap().to_str().unwrap()));
+        assert!(results[0].contains("here"));
+        assert!(!results[0].contains("elsewhere"));
+    }
+
+    #[test]
+    fn falls_back_to_disk_when_cwd_has_no_match() {
+        let temp = tempfile::tempdir().unwrap();
+        let disk = temp.path();
+        let cwd = disk.join("here");
+        fs::create_dir_all(&cwd).unwrap();
+        fs::create_dir_all(disk.join("elsewhere/target-dir")).unwrap();
+
+        let app_args = args(&["target-dir"], QueryOrder::Sequential);
+        let results =
+            find_directories_prefer_local(Some(&cwd), disk, &app_args.queries, &app_args).unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert!(results[0].contains("elsewhere"));
+        assert!(results[0].ends_with("target-dir"));
+    }
+
+    #[test]
+    fn searches_whole_root_when_cwd_is_the_disk_root() {
+        let temp = tempfile::tempdir().unwrap();
+        let disk = temp.path();
+        fs::create_dir_all(disk.join("a/target-dir")).unwrap();
+        fs::create_dir_all(disk.join("b/target-dir")).unwrap();
+
+        let app_args = args(&["target-dir"], QueryOrder::Sequential);
+        let results =
+            find_directories_prefer_local(Some(disk), disk, &app_args.queries, &app_args).unwrap();
+
+        assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn strict_descendant_rejects_the_path_itself() {
+        let path = PathBuf::from("/home/user");
+        assert!(!is_strict_descendant(&path, &path));
+        assert!(is_strict_descendant(
+            &path.join("project"),
+            &path
+        ));
+        assert!(!is_strict_descendant(
+            Path::new("/var/log"),
+            Path::new("/home")
+        ));
     }
 
     #[cfg(target_os = "windows")]

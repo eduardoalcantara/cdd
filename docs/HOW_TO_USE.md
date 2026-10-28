@@ -2,7 +2,7 @@
 
 ## Conceito
 
-O `cdd` localiza um diretório sem exigir seu caminho completo. O usuário informa partes dos nomes das pastas; o binário pesquisa, apresenta os destinos válidos e o wrapper altera o diretório do shell atual.
+O `cdd` localiza um diretório sem exigir seu caminho completo. O usuário informa partes dos nomes das pastas; o binário pesquisa primeiro dentro da pasta atual do terminal e, se não encontrar, continua na raiz do disco. Em seguida apresenta os destinos válidos e o wrapper altera o diretório do shell atual.
 
 ```bash
 cdd projetos meu-app

@@ -27,6 +27,8 @@ Usuário
             ├─> carrega configuração
             ├─> interpreta argumentos
             ├─> escolhe raiz de pesquisa
+            ├─> pesquisa primeiro no diretório atual
+            ├─> se vazio, pesquisa a raiz do disco
             ├─> percorre diretórios
             ├─> aplica queries
             ├─> ordena resultados
@@ -44,7 +46,7 @@ Usuário
 | `src/args.rs` | Parser, validação de flags e aplicação sticky |
 | `src/config.rs` | Configuração JSON e migração retrocompatível |
 | `src/pattern.rs` | Termos literais e curingas `*`/`?` |
-| `src/search.rs` | Raiz, varredura, query order e ordenação |
+| `src/search.rs` | CWD primeiro, raiz do disco, query order e ordenação |
 | `src/tui.rs` | Lista interativa, filtro literal e seleção |
 | `src/help.rs` | Texto de `-h`/`--help` |
 
@@ -66,13 +68,20 @@ Configurações antigas, sem `sticky`, são migradas por valores não default. O
 
 ## Raiz e varredura
 
-`search.rs` usa `jwalk` para percorrer diretórios concorrentemente:
+`search.rs` usa `jwalk` para percorrer diretórios concorrentemente. A ordem de pesquisa é:
 
-- Linux/WSL: raiz `/`;
+1. descendentes do diretório atual do terminal (CWD), se o CWD for uma subpasta da raiz do disco;
+2. se nenhum match for encontrado (ou com `-ir`), a raiz do disco.
+
+Raiz do disco:
+
+- Linux/WSL: `/`;
 - Windows: drive atual;
 - Windows: uma letra como primeiro termo muda o drive.
 
 Ao pesquisar `/` no Linux, a leitura não desce em `/proc`, `/sys`, `/dev` e `/run`.
+
+A animação de espera aparece na varredura da raiz do disco, não na pesquisa local.
 
 Erros individuais de acesso são ignorados; diretórios acessíveis continuam sendo processados.
 

@@ -22,8 +22,11 @@ Implementar uma CLI cross-platform que encontre diretórios por termos parciais 
 
 ### Raiz
 
-- Linux/WSL: `/`, sem descer em `/proc`, `/sys`, `/dev` e `/run`.
+- A busca começa na pasta atual do terminal (descendentes do CWD).
+- Se nenhum destino corresponder, a busca continua na raiz do disco.
+- Linux/WSL: raiz `/`, sem descer em `/proc`, `/sys`, `/dev` e `/run`.
 - Windows: drive atual; uma letra como primeiro termo seleciona outro drive.
+- `-ir` reconstrói o índice da raiz do disco e não aplica a preferência do CWD.
 
 ## 3. Arquitetura
 
